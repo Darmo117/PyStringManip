@@ -17,7 +17,7 @@ class OperationConfig:
 
 @dataclasses.dataclass(frozen=True)
 class Config:
-    verbose: bool
+    verbosity: int
     operations: typ.List[OperationConfig]
 
 
@@ -62,7 +62,7 @@ def parse_args() -> Config:
     # Change the default help text for the -h action.
     # noinspection PyProtectedMember
     parser._actions[0].help = 'Show this help message and exit.'
-    parser.add_argument('-v', '--verbose', action='store_true', help='Print intermediary operation results.')
+    parser.add_argument('-v', '--verbosity', action='count', help='Print intermediary operations.')
     doc = ('An operation to apply to the input string.'
            ' It must be of the form `<operation>[<arg1>=<value1>,<arg2>=<value2>,…]`.\n'
            'Available operations:\n')
@@ -77,7 +77,7 @@ def parse_args() -> Config:
 
     args = parser.parse_args()
     return Config(
-        verbose=args.verbose,
+        verbosity=args.verbosity,
         operations=[parse_operation(op, ops_metadata, i + 1) for i, op in enumerate(args.operations)],
     )
 
@@ -94,7 +94,7 @@ def main():
         return
     data = sys.stdin.read()
 
-    pipeline: pl.Pipeline | pl.ParallelPipeline = pl.Pipeline(verbose=operations_config.verbose)
+    pipeline: pl.Pipeline | pl.ParallelPipeline = pl.Pipeline(verbosity=operations_config.verbosity)
     for i, operation in enumerate(operations_config.operations):
         try:
             match operation.name:

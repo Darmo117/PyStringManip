@@ -1,9 +1,39 @@
 from __future__ import annotations
 
+import sys
 import threading
 import typing as typ
 
 from . import operations as ops
+
+
+class _Logger:
+    NONE = 0
+    OPERATIONS = 1
+    INTERMEDIARY_RESULTS = 2
+    DEBUG = 3
+
+    def __init__(self, name: str, level: int = NONE):
+        self._name = name
+        self._level = level
+
+    def warning(self, o):
+        self._print(o, prefix='[WARN]', out=sys.stderr)
+
+    def print_operation(self, s: str):
+        if self._level >= self.OPERATIONS:
+            self._print(f'-> {s}')
+
+    def print_intermediary_result(self, s: str):
+        if self._level >= self.INTERMEDIARY_RESULTS:
+            self._print('input:\n' + s)
+
+    def debug(self, o):
+        if self._level >= self.DEBUG:
+            self._print(o, prefix='[DEBUG]')
+
+    def _print(self, o, prefix: str = '', out=sys.stdout):
+        print(f'[{self._name}]' + prefix, o, file=out)
 
 
 class Pipeline:
@@ -11,13 +41,20 @@ class Pipeline:
     Each operation takes in the string returned by the operation preceding it.
     """
 
-    def __init__(self, verbose: bool = False):
+    def __init__(self, name: str = 'main', verbosity: int = _Logger.NONE):
         """Creates a pipeline.
 
-        :param verbose: If true, each intermediate result will be displayed.
+        :param name: Name of this pipeline.
+        :param verbosity: The verbosity level.
         """
-        self._verbose = verbose
+        self._name = name
+        self._verbosity = verbosity
         self._operations: typ.List[ops.Operation | Pipeline] = []
+        self._logger = _Logger(name, verbosity)
+
+    @property
+    def name(self) -> str:
+        return self._name
 
     def then(self, op: ops.Operation) -> Pipeline:
         """Appends an operation to this pipeline.
@@ -34,7 +71,7 @@ class Pipeline:
         :param delimiter: The string to split on.
         :return: A parallel pipeline.
         """
-        parallel_pipeline = ParallelPipeline(self, delimiter, verbose=self._verbose)
+        parallel_pipeline = ParallelPipeline(self, delimiter, verbosity=self._verbosity)
         self._operations.append(parallel_pipeline)
         return parallel_pipeline
 
@@ -46,15 +83,14 @@ class Pipeline:
         :return: The transformed string.
         """
         if not self._operations:
-            if self._verbose:
-                print('warning: pipeline is empty')
+            self._logger.warning('pipeline is empty')
             return s
 
         buffer = s
         for op in self._operations:
-            if self._verbose:
-                op_name = f'fork[delimiter={op.delimiter!r}]' if isinstance(op, ParallelPipeline) else op
-                print(buffer, end=f'\n-> {op_name}\n')
+            self._logger.print_intermediary_result(buffer)
+            self._logger.print_operation(
+                f'fork[delimiter={op.delimiter!r}]' if isinstance(op, ParallelPipeline) else op)
             if isinstance(op, Pipeline):
                 buffer = op.execute(buffer)
             else:
@@ -67,14 +103,14 @@ class ParallelPipeline(Pipeline):
     The sub-results must be merged by calling the `merge(str)` method.
     """
 
-    def __init__(self, parent: Pipeline, delimiter: str, verbose: bool = False):
+    def __init__(self, parent: Pipeline, delimiter: str, verbosity: int = 0):
         """Creates a parallel pipeline.
 
         :param parent: This pipeline’s parent.
         :param delimiter: The delimiter to use to split the input string.
-        :param verbose: If true, each intermediate result will be displayed.
+        :param verbosity: The verbosity level.
         """
-        super().__init__(verbose=verbose)
+        super().__init__(name=parent.name, verbosity=verbosity)
         self._parent = parent
         self._delimiter = delimiter
         self._joiner = None
@@ -107,15 +143,16 @@ class ParallelPipeline(Pipeline):
 
         if self._delimiter in s:
             substrings = filter(None, s.split(self._delimiter))
-            p = Pipeline(verbose=self._verbose)
-            p._operations = self._operations
-            threads = [_ThreadWithReturnValue(target=p.execute, arg=substring) for substring in substrings]
+            threads = []
+            for i, substring in enumerate(substrings):
+                p = Pipeline(name=f'{self.name}.{i + 1}', verbosity=self._verbosity)
+                p._operations = self._operations
+                threads.append(_ThreadWithReturnValue(target=p.execute, arg=substring))
             for thread in threads:
                 thread.start()
             for thread in threads:
                 thread.join()
-            if self._verbose:
-                print(f'-> merge[joiner={self._joiner!r}]')
+            self._logger.print_operation(f'merge[joiner={self._joiner!r}]')
             return self._joiner.join(thread.result for thread in threads)
         else:
             return super().execute(s)

@@ -62,7 +62,7 @@ def parse_args() -> Config:
     # Change the default help text for the -h action.
     # noinspection PyProtectedMember
     parser._actions[0].help = 'Show this help message and exit.'
-    parser.add_argument('-v', '--verbosity', action='count', help='Print intermediary operations.')
+    parser.add_argument('-v', '--verbosity', action='count', default=0, help='Print intermediary operations.')
     doc = ('An operation to apply to the input string.'
            ' It must be of the form `<operation>[<arg1>=<value1>,<arg2>=<value2>,…]`.\n'
            'Available operations:\n')
@@ -111,11 +111,15 @@ def main():
                 case name:
                     pipeline = pipeline.then(ops.create_operation(name, **operation.args))
         except Exception as e:
+            if operations_config.verbosity >= pl.Logger.DEBUG:
+                print(e, file=sys.stderr)
             print(f'Error at operation {operation.name!r} (#{i + 1}): {e}', file=sys.stderr)
             return
     try:
         print(pipeline.execute(data))
     except Exception as e:
+        if operations_config.verbosity >= pl.Logger.DEBUG:
+            print(e, file=sys.stderr)
         print('Error:', e, file=sys.stderr)
 
 

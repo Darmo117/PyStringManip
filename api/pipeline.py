@@ -7,7 +7,7 @@ import typing as typ
 from . import operations as ops
 
 
-class _Logger:
+class Logger:
     NONE = 0
     OPERATIONS = 1
     INTERMEDIARY_RESULTS = 2
@@ -41,7 +41,7 @@ class Pipeline:
     Each operation takes in the string returned by the operation preceding it.
     """
 
-    def __init__(self, name: str = 'main', verbosity: int = _Logger.NONE):
+    def __init__(self, name: str = 'main', verbosity: int = Logger.NONE):
         """Creates a pipeline.
 
         :param name: Name of this pipeline.
@@ -50,7 +50,7 @@ class Pipeline:
         self._name = name
         self._verbosity = verbosity
         self._operations: typ.List[ops.Operation | Pipeline] = []
-        self._logger = _Logger(name, verbosity)
+        self._logger = Logger(name, verbosity)
 
     @property
     def name(self) -> str:

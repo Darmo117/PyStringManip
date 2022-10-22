@@ -27,17 +27,35 @@ class Config:
     operations: typ.List[OperationConfig]
 
 
-def parse_operation(raw: str, ops_metadata: ops.OperationsMetadada) -> OperationConfig:
+def parse_operation(raw: str, ops_metadata: ops.OperationsMetadada, index: int) -> OperationConfig:
     if match := OPERATION_CFG_REGEX.fullmatch(raw):
         op_name = match.group('name')
+        if op_name not in ops_metadata:
+            raise ValueError(f'undefined operation: {op_name!r} (#{index})')
         op_metadata = ops_metadata[op_name]
-        raw_params = p.split(',') if (p := match.group('params')) else []
+        raw_params = re.split(r'(?<!\\),', p) if (p := match.group('params')) else []
+
+        def cast_value(param_name: str, param_value: str):
+            try:
+                return op_metadata.args[param_name].type(param_value)
+            except KeyError:
+                raise ValueError(f'invalid parameter {param_name!r} for operation {op_name!r} (#{index})')
+            except ValueError:
+                raise ValueError(
+                    f'invalid value {param_value!r} for parameter {param_name!r} on operation {op_name!r} (#{index})')
+
+        def split_param(raw_param: str) -> typ.List[str]:
+            raw_param = raw_param.replace(r'\,', ',')
+            if '=' not in raw_param:
+                raise ValueError(f'malformed parameter {raw_param!r} for operation {op_name!r} (#{index})')
+            return raw_param.split('=', 1)
+
         args = {
-            k: op_metadata.args[k].type(v)
-            for k, v in (rp.split('=') for rp in raw_params)
+            k: cast_value(k, v)
+            for k, v in map(split_param, raw_params)
         }
         return OperationConfig(name=op_name, args=args)
-    raise ValueError(f'invalid operation definition: {raw}')
+    raise ValueError(f'invalid operation definition: {raw!r} (#{index})')
 
 
 def parse_args() -> Config:
@@ -65,12 +83,16 @@ def parse_args() -> Config:
     args = parser.parse_args()
     return Config(
         verbose=args.verbose,
-        operations=[parse_operation(op, ops_metadata) for op in args.operations],
+        operations=[parse_operation(op, ops_metadata, i) for i, op in enumerate(args.operations)],
     )
 
 
 def main():
-    operations_config = parse_args()
+    try:
+        operations_config = parse_args()
+    except ValueError as e:
+        print('Error:', e, file=sys.stderr)
+        return
     data = sys.stdin.read()
 
     pipeline: pl.Pipeline | pl.ParallelPipeline = pl.Pipeline(verbose=operations_config.verbose)
@@ -88,7 +110,10 @@ def main():
                 pipeline = pipeline.merge(**args)
             case name:
                 pipeline = pipeline.then(ops.create_operation(name, **operation.args))
-    print(pipeline.execute(data))
+    try:
+        print(pipeline.execute(data))
+    except Exception as e:
+        print('Error:', e, file=sys.stderr)
 
 
 if __name__ == '__main__':

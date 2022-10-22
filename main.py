@@ -1,6 +1,5 @@
 import argparse
 import dataclasses
-import enum
 import re
 import sys
 import typing as typ
@@ -8,11 +7,6 @@ import typing as typ
 from api import operations as ops, pipeline as pl
 
 OPERATION_CFG_REGEX = re.compile(r'(?P<name>\w+)(?:\[(?P<params>(?:\w+=.*?)+(?:,(?:\w+=.*?)+)*)?])?')
-
-
-class SpecialCase(enum.Enum):
-    FORK = 'fork'
-    MERGE = 'merge'
 
 
 @dataclasses.dataclass(frozen=True)
@@ -89,6 +83,10 @@ def parse_args() -> Config:
 
 
 def main():
+    class SpecialOperations:
+        FORK = 'fork'
+        MERGE = 'merge'
+
     try:
         operations_config = parse_args()
     except ValueError as e:
@@ -100,12 +98,12 @@ def main():
     for i, operation in enumerate(operations_config.operations):
         try:
             match operation.name:
-                case SpecialCase.FORK.value:
+                case SpecialOperations.FORK:
                     args = {}
                     if 'delimiter' in operation.args:
                         args = {'delimiter': operation.args['delimiter']}
                     pipeline = pipeline.fork(**args)
-                case SpecialCase.MERGE.value:
+                case SpecialOperations.MERGE:
                     args = {}
                     if 'joiner' in operation.args:
                         args = {'joiner': operation.args['joiner']}

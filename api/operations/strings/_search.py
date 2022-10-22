@@ -6,7 +6,7 @@ from ... import utils
 
 
 class RemoveWhitespace(_core.Operation):
-    """Remove whitespace from a string."""
+    """Remove whitespace."""
 
     def __init__(self, exclude: str = ''):
         """Create an operation that removes whitespace.
@@ -25,6 +25,13 @@ class RemoveWhitespace(_core.Operation):
 
     def apply(self, s: str) -> str:
         return re.sub(fr'[^\S{self._exclude}]', '', s)
+
+
+class RemoveNullBytes(_core.Operation):
+    """Remove all null bytes."""
+
+    def apply(self, s: str) -> str:
+        return s.replace('\0', '')
 
 
 class Replace(_core.Operation):

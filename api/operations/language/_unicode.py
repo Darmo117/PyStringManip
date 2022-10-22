@@ -1,4 +1,7 @@
+import abc
+import re
 import typing as typ
+import unicodedata
 
 import unidecode
 
@@ -34,29 +37,47 @@ class RemoveDiacritics(_core.Operation):
         return unidecode.unidecode(s)
 
 
-class EscapeUnicodeChars(_core.Operation):
+class _UnicodeChars(_core.Operation, abc.ABC):
+    """Base class for Unicode escaping operations."""
+    _UTF16BE = 'utf16be'
+    _PYTHON = 'python'
+
+    def __init__(self, mode: str = r'utf16be'):
+        """Create a Unicode escape operation.
+
+        :param mode: The prefix to prepend to the codepoints.
+        """
+        if mode not in (self._UTF16BE, self._PYTHON):
+            raise ValueError(f'invalid mode: {mode}')
+        self._mode = mode
+
+    def get_params(self) -> typ.Dict[str, typ.Any]:
+        return {
+            'mode': self._mode,
+        }
+
+
+class EscapeUnicodeChars(_UnicodeChars):
     """Escape all or some Unicode characters."""
 
-    def __init__(self, mode: str = r'utf16be', encode_all_chars: bool = False, uppercase_hex: bool = False):
+    def __init__(self, mode: str = _UnicodeChars._UTF16BE, encode_all_chars: bool = False, uppercase_hex: bool = False):
         """Create a Unicode escape operation.
 
         :param mode: The prefix to prepend to the codepoints.
         :param encode_all_chars: Whether to escape all characters instead of only those with a codepoint > 127.
         :param uppercase_hex: Whether to print hex codepoints as upper case.
         """
+        super().__init__(mode)
         self._functions = {
-            'utf16be': self._escape_to_utf16be,
-            'python': self._escape_to_python,
+            self._UTF16BE: self._escape_to_utf16be,
+            self._PYTHON: self._escape_to_python,
         }
-        if mode not in self._functions:
-            raise ValueError(f'invalid mode: {mode}')
-        self._mode = mode
         self._encode_all_chars = encode_all_chars
         self._uppercase_hex = uppercase_hex
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
         return {
-            'mode': self._mode,
+            **super().get_params(),
             'encode_all_chars': self._encode_all_chars,
             'uppercase_hex': self._uppercase_hex,
         }
@@ -80,3 +101,65 @@ class EscapeUnicodeChars(_core.Operation):
             r'\u' + format(int.from_bytes(b[i:i + 2], 'big'), '04' + ('X' if self._uppercase_hex else 'x'))
             for i in range(0, len(b), 2)
         )
+
+
+class UnescapeUnicodeChars(_UnicodeChars):
+    """Unescape all escaped Unicode characters."""
+
+    _UTF16BE_REGEX = re.compile(r'((?:\\u[0-9a-fA-F]{4})+)')
+    _PYTHON_REGEX = re.compile(r'\\(?:u([0-9a-fA-F]{4})|U([0-9a-fA-F]{8}))')
+
+    def apply(self, s: str) -> str:
+        match self._mode:
+            case self._PYTHON:
+                return self._unescape_as_python(s)
+            case self._UTF16BE:
+                return self._unescape_from_utf16be(s)
+
+    def _unescape_as_python(self, s: str) -> str:
+        def aux(m: typ.Match[str]) -> str:
+            match = m.group(1) or m.group(2)
+            c = chr(int(match, 16))
+            try:
+                # Check if code is valid UTF-8: will raise a UnicodeEncodeError if not
+                bytes(c, 'utf8')
+            except UnicodeEncodeError:
+                # Escape code is not valid UTF-8, return the initial sequence
+                return m.group()[:2] + match
+            else:
+                return c
+
+        return self._PYTHON_REGEX.sub(aux, s)
+
+    def _unescape_from_utf16be(self, s: str) -> str:
+        def aux(m: typ.Match[str]) -> str:
+            bytes_ = b''
+            for code in m.group(1).split(r'\u')[1:]:
+                bytes_ += int(code, 16).to_bytes(2, 'big')
+            try:
+                return bytes_.decode(encoding='utf-16be')
+            except UnicodeDecodeError:
+                return m.group()
+
+        return self._UTF16BE_REGEX.sub(aux, s)
+
+
+class NormalizeUnicode(_core.Operation):
+    """Normalize a Unicode string."""
+
+    def __init__(self, norm: str = 'NFC'):
+        """Create a Unicode normalizer.
+
+        :param norm: The norm of the resulting string, either NFC, NFKC, NFD or NFKD.
+        """
+        if norm not in ('NFC', 'NFKC', 'NFD', 'NFKD'):
+            raise ValueError(f'invalid Unicode norm: {norm}')
+        self._norm = norm
+
+    def get_params(self) -> typ.Dict[str, typ.Any]:
+        return {
+            'norm': self._norm,
+        }
+
+    def apply(self, s: str) -> str:
+        return unicodedata.normalize(self._norm, s)

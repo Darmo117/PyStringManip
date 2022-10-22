@@ -7,7 +7,7 @@ import typing as typ
 
 from api import operations as ops, pipeline as pl
 
-OPERATION_CFG_REGEX = re.compile(r'(?P<name>\w+)(?:\[(?P<params>(?:\w+=.+?)+(?:,(?:\w+=.+?)+)*)?])?')
+OPERATION_CFG_REGEX = re.compile(r'(?P<name>\w+)(?:\[(?P<params>(?:\w+=.*?)+(?:,(?:\w+=.*?)+)*)?])?')
 
 
 class SpecialCase(enum.Enum):
@@ -35,7 +35,7 @@ def parse_operation(raw: str, ops_metadata: ops.OperationsMetadada, index: int) 
         op_metadata = ops_metadata[op_name]
         raw_params = re.split(r'(?<!\\),', p) if (p := match.group('params')) else []
 
-        def cast_value(param_name: str, param_value: str):
+        def cast_value(param_name: str, param_value: str) -> str:
             try:
                 return op_metadata.args[param_name].type(param_value)
             except KeyError:
@@ -55,7 +55,8 @@ def parse_operation(raw: str, ops_metadata: ops.OperationsMetadada, index: int) 
             for k, v in map(split_param, raw_params)
         }
         return OperationConfig(name=op_name, args=args)
-    raise ValueError(f'invalid operation definition: {raw!r} (#{index})')
+    else:
+        raise ValueError(f'invalid operation definition: {raw!r} (#{index})')
 
 
 def parse_args() -> Config:

@@ -132,7 +132,7 @@ class Filter(_core.Operation):
         """Create a filter.
 
         :param delimiter: The string to split the text with.
-        :param regex: The regex:
+        :param regex: The regex.
         :param flags: The list of regex flags: 's' to make the dot match new lines,
          'i' for case insensitiveness, 'm' to make '^' and '$' match the start and end of lines,
          'x' to ignore whitespace, 'a' to match only ASCII characters.
@@ -147,7 +147,7 @@ class Filter(_core.Operation):
         return {
             'delimiter': self._delimiter,
             'regex': self._regex.pattern,
-            'flag': self._flags,
+            'flags': self._flags,
             'invert': self._invert,
         }
 

@@ -84,7 +84,7 @@ def parse_args() -> Config:
     args = parser.parse_args()
     return Config(
         verbose=args.verbose,
-        operations=[parse_operation(op, ops_metadata, i) for i, op in enumerate(args.operations)],
+        operations=[parse_operation(op, ops_metadata, i + 1) for i, op in enumerate(args.operations)],
     )
 
 
@@ -97,20 +97,24 @@ def main():
     data = sys.stdin.read()
 
     pipeline: pl.Pipeline | pl.ParallelPipeline = pl.Pipeline(verbose=operations_config.verbose)
-    for operation in operations_config.operations:
-        match operation.name:
-            case SpecialCase.FORK.value:
-                args = {}
-                if 'delimiter' in operation.args:
-                    args = {'delimiter': operation.args['delimiter']}
-                pipeline = pipeline.fork(**args)
-            case SpecialCase.MERGE.value:
-                args = {}
-                if 'joiner' in operation.args:
-                    args = {'joiner': operation.args['joiner']}
-                pipeline = pipeline.merge(**args)
-            case name:
-                pipeline = pipeline.then(ops.create_operation(name, **operation.args))
+    for i, operation in enumerate(operations_config.operations):
+        try:
+            match operation.name:
+                case SpecialCase.FORK.value:
+                    args = {}
+                    if 'delimiter' in operation.args:
+                        args = {'delimiter': operation.args['delimiter']}
+                    pipeline = pipeline.fork(**args)
+                case SpecialCase.MERGE.value:
+                    args = {}
+                    if 'joiner' in operation.args:
+                        args = {'joiner': operation.args['joiner']}
+                    pipeline = pipeline.merge(**args)
+                case name:
+                    pipeline = pipeline.then(ops.create_operation(name, **operation.args))
+        except Exception as e:
+            print(f'Error at operation {operation.name!r} (#{i + 1}): {e}', file=sys.stderr)
+            return
     try:
         print(pipeline.execute(data))
     except Exception as e:

@@ -7,6 +7,7 @@ from .data_formats import *
 from .info_theory import *
 from .language import *
 from .random import *
+from .strings import *
 
 
 @dataclasses.dataclass(frozen=True)

@@ -61,3 +61,30 @@ class Replace(_core.Operation):
         return re.sub(self._regex, self._repl, s,
                       flags=utils.regex_flags_to_int(self._flags),
                       count='g' not in self._flags)
+
+
+class Occurrences(_core.Operation):
+    """Count occurrences of substrings that match the given regex."""
+
+    def __init__(self, regex: str = '', flags: str = '', invert: bool = False):
+        """Create an occurrences counter.
+
+        :param regex: The regex.
+        :param flags: The list of regex flags: 's' to make the dot match new lines,
+         'i' for case insensitiveness, 'm' to make '^' and '$' match the start and end of lines,
+         'x' to ignore whitespace, 'a' to match only ASCII characters.
+        :param invert: If true, filters out strings that do match the regex.
+        """
+        self._regex = re.compile(regex, flags=utils.regex_flags_to_int(flags))
+        self._flags = flags
+        self._invert = invert
+
+    def get_params(self) -> typ.Dict[str, typ.Any]:
+        return {
+            'regex': self._regex.pattern,
+            'flags': self._flags,
+            'invert': self._invert,
+        }
+
+    def apply(self, s: str) -> str:
+        return str(len(self._regex.findall(s)))

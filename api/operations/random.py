@@ -46,17 +46,17 @@ class RandomUuid(_core.Operation):
 class Lipsum(_core.Operation):
     """Generate lorem ipsum text."""
 
-    def __init__(self, size: int = 5, unit: str = 'paragraphs'):
+    def __init__(self, size: int = 5, unit: str = 'p'):
         """Create a lorem ipsum generator.
 
         :param size: The number of worlds, sentences or paragraphs, depending on the `unit` parameter.
-        :param unit: The type of lorem to generate, either 'words', 'sentences' or 'paragraphs'.
+        :param unit: The type of lorem to generate, either 'w' (words), 's' (sentences) or 'p' (paragraphs).
         """
         self._size = size
         self._functions = {
-            'words': lorem.words,
-            'sentences': lambda nb: ' '.join(lorem.sentence() for _ in range(nb)),
-            'paragraphs': lorem.paragraphs,
+            'w': lorem.words,
+            's': lambda nb: ' '.join(lorem.sentence() for _ in range(nb)),
+            'p': lorem.paragraphs,
         }
         if unit not in self._functions:
             raise ValueError(f'invalid unit: {unit}')

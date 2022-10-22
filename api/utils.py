@@ -9,3 +9,11 @@ def flip_dict(d: dict) -> dict:
     :return: A new dict object.
     """
     return {v: k for k, v in d.items()}
+
+
+def unescape_whitespace(s: str) -> str:
+    return (s.replace(r'\n', '\n')
+            .replace(r'\r', '\r')
+            .replace(r'\t', '\t')
+            .replace(r'\f', '\f')
+            .replace(r'\v', '\v'))

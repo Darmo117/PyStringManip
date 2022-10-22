@@ -2,6 +2,29 @@ import re
 import typing as typ
 
 from .. import _core
+from ... import utils
+
+
+class RemoveWhitespace(_core.Operation):
+    """Remove whitespace from a string."""
+
+    def __init__(self, exclude: str = ''):
+        """Create an operation that removes whitespace.
+
+        :param exclude: The list of whitespace characters to keep.
+        """
+        if match := re.search(r'(\S)', utils.unescape_whitespace(exclude)):
+            raise ValueError(
+                f'found non-whitespace character in exclusion list at index {match.start(1) + 1}: {match.group(1)!r}')
+        self._exclude = exclude
+
+    def get_params(self) -> typ.Dict[str, typ.Any]:
+        return {
+            'exclude': self._exclude,
+        }
+
+    def apply(self, s: str) -> str:
+        return re.sub(fr'[^\S{self._exclude}]', '', s)
 
 
 class Replace(_core.Operation):
@@ -42,10 +65,7 @@ class Replace(_core.Operation):
             case self._STRING:
                 return s.replace(self._find, self._repl)
             case self._EXTENDED:
-                def extend(string: str) -> str:
-                    return string.replace(r'\n', '\n').replace(r'\r', '\r').replace(r'\t', '\t')
-
-                return s.replace(extend(self._find), extend(self._repl))
+                return s.replace(utils.unescape_whitespace(self._find), utils.unescape_whitespace(self._repl))
             case self._REGEX:
                 flags = 0
                 for f in self._flags:

@@ -2,6 +2,7 @@ import re
 import typing as typ
 
 from .. import _core
+from ... import utils
 
 
 class Uppercase(_core.Operation):
@@ -127,21 +128,26 @@ class Unique(_core.Operation):
 class Filter(_core.Operation):
     """Split the text then filter out each substring that does not match the given regex."""
 
-    def __init__(self, delimiter: str = '\n', regex: str = '', invert: bool = False):
+    def __init__(self, delimiter: str = '\n', regex: str = '', flags: str = '', invert: bool = False):
         """Create a filter.
 
         :param delimiter: The string to split the text with.
         :param regex: The regex:
+        :param flags: The list of regex flags: 's' to make the dot match new lines,
+         'i' for case insensitiveness, 'm' to make '^' and '$' match the start and end of lines,
+         'x' to ignore whitespace, 'a' to match only ASCII characters.
         :param invert: If true, filters out strings that do match the regex.
         """
         self._delimiter = delimiter
-        self._regex = re.compile(regex)
+        self._regex = re.compile(regex, flags=utils.regex_flags_to_int(flags))
+        self._flags = flags
         self._invert = invert
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
         return {
             'delimiter': self._delimiter,
-            'regex': self._regex,
+            'regex': self._regex.pattern,
+            'flag': self._flags,
             'invert': self._invert,
         }
 

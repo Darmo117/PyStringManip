@@ -2,6 +2,8 @@ import os
 import typing as typ
 import uuid
 
+from lorem_text import lorem
+
 from . import _core
 
 
@@ -42,8 +44,22 @@ class RandomUuid(_core.Operation):
 
 
 class Lipsum(_core.Operation):
-    def __init__(self, size: int = 5, unit: str = '§'):
+    """Generate lorem ipsum text."""
+
+    def __init__(self, size: int = 5, unit: str = 'paragraphs'):
+        """Create a lorem ipsum generator.
+
+        :param size: The number of worlds, sentences or paragraphs, depending on the `unit` parameter.
+        :param unit: The type of lorem to generate, either 'words', 'sentences' or 'paragraphs'.
+        """
         self._size = size
+        self._functions = {
+            'words': lorem.words,
+            'sentences': lambda nb: ' '.join(lorem.sentence() for _ in range(nb)),
+            'paragraphs': lorem.paragraphs,
+        }
+        if unit not in self._functions:
+            raise ValueError(f'invalid unit: {unit}')
         self._unit = unit
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
@@ -53,4 +69,4 @@ class Lipsum(_core.Operation):
         }
 
     def apply(self, s: str) -> str:
-        pass  # TODO
+        return self._functions[self._unit](self._size)

@@ -55,7 +55,7 @@ def _parse_cli_operation(raw: str, ops_metadata: ops.OperationsMetadada, index: 
         raise ValueError(f'invalid operation definition: {raw!r} (#{index})')
 
 
-def _load_config(config: pathlib.Path, ops_metadata: ops.OperationsMetadada) -> typ.List[OperationConfig]:
+def _load_config(config_path: pathlib.Path, ops_metadata: ops.OperationsMetadada) -> typ.List[OperationConfig]:
     operations = []
 
     def cast_value(op_name: str, op_index: int, param_name: str, param_value: str) -> typ.Any:
@@ -68,7 +68,7 @@ def _load_config(config: pathlib.Path, ops_metadata: ops.OperationsMetadada) -> 
                 f'invalid value {param_value!r} for parameter {param_name!r} on operation {op_name!r} (#{op_index})')
 
     try:
-        with config.open(mode='r', encoding='utf8') as f:
+        with config_path.open(mode='r', encoding='utf8') as f:
             for i, operation in enumerate(json.load(f)['operations']):
                 name = operation['name']
                 if name not in ops_metadata:
@@ -101,6 +101,7 @@ def parse_args(args: typ.List[str]) -> Config:
     # Change the default help text for the -h action.
     # noinspection PyProtectedMember
     parser._actions[0].help = 'Show this help message and exit.'
+    # TODO add option to display help for specific operation
     parser.add_argument('-v', '--verbosity', action='count', default=0, help='Print intermediary operations.')
     parser.add_argument('-c', '--config', metavar='FILE', type=pathlib.Path,
                         help='Path to a JSON operations configuration file.')

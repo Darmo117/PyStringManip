@@ -4,6 +4,7 @@ import inspect
 from . import _docstring_parser as dsp
 from ._core import *
 from .data_formats import *
+from .date_time import *
 from .info_theory import *
 from .informatics import *
 from .language import *

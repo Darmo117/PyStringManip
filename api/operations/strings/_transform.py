@@ -297,3 +297,58 @@ class DropBytes(_TakeBytes):
     def apply(self, s: str) -> str:
         bytes_ = bytes(s, self._encoding)
         return (bytes_[:self._start] + bytes_[self._start + self._n:]).decode(self._encoding)
+
+
+class Escape(_core.Operation):
+    CHARS = {
+        '\\': r'\\',
+        '\n': r'\n',
+        '\r': r'\r',
+        '\t': r'\t',
+        '\f': r'\f',
+        '\v': r'\v',
+        '\b': r'\b',
+    }
+
+    _SINGLE_QUOTE = 'single'
+    _DOUBLE_QUOTE = 'double'
+    _BACK_QUOTE = 'back'
+
+    def __init__(self, escape_quote: str = _SINGLE_QUOTE):
+        self._escape_quote = escape_quote
+
+    def get_params(self) -> typ.Dict[str, typ.Any]:
+        return {
+            'escape_quote': self._escape_quote,
+        }
+
+    def apply(self, s: str) -> str:
+        for c, repl in self.CHARS.items():
+            s = s.replace(c, repl)
+        quote = ''
+        match self._escape_quote:
+            case self._SINGLE_QUOTE:
+                quote = "'"
+            case self._DOUBLE_QUOTE:
+                quote = '"'
+            case self._BACK_QUOTE:
+                quote = '`'
+        return s.replace(quote, '\\' + quote)
+
+
+class Unescape(_core.Operation):
+    CHARS = {
+        r'\n': '\n',
+        r'\r': '\r',
+        r'\t': '\t',
+        r'\f': '\f',
+        r'\v': '\v',
+        r'\b': '\b',
+        r'\\': '\\',
+    }
+
+    def apply(self, s: str) -> str:
+        for c, repl in self.CHARS.items():
+            s = s.replace(c, repl)
+        s = s.replace(r"\'", "'").replace(r'\"', '"').replace(r'\`', '`')
+        return s

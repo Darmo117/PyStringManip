@@ -300,7 +300,9 @@ class DropBytes(_TakeBytes):
 
 
 class Escape(_core.Operation):
-    CHARS = {
+    r"""Escape special characters: '\\n', '\\r', '\\t', '\\f', '\\v', '\\b', '\\' and the specified quote (', " or `)"""
+
+    _CHARS = {
         '\\': r'\\',
         '\n': r'\n',
         '\r': r'\r',
@@ -315,6 +317,10 @@ class Escape(_core.Operation):
     _BACK_QUOTE = 'back'
 
     def __init__(self, escape_quote: str = _SINGLE_QUOTE):
+        """Create an escape operation.
+
+        :param escape_quote: The quote to escape: 'single' for ', 'double' for " and 'back' for `.
+        """
         self._escape_quote = escape_quote
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
@@ -323,7 +329,7 @@ class Escape(_core.Operation):
         }
 
     def apply(self, s: str) -> str:
-        for c, repl in self.CHARS.items():
+        for c, repl in self._CHARS.items():
             s = s.replace(c, repl)
         quote = ''
         match self._escape_quote:
@@ -337,7 +343,9 @@ class Escape(_core.Operation):
 
 
 class Unescape(_core.Operation):
-    CHARS = {
+    r"""Unescape escaped special characters: \\\\n, \\\\r, \\\\t, \\\\f, \\\\v, \\\\b, \\\\, \\', \\" and \\`."""
+
+    _CHARS = {
         r'\n': '\n',
         r'\r': '\r',
         r'\t': '\t',
@@ -348,7 +356,7 @@ class Unescape(_core.Operation):
     }
 
     def apply(self, s: str) -> str:
-        for c, repl in self.CHARS.items():
+        for c, repl in self._CHARS.items():
             s = s.replace(c, repl)
         s = s.replace(r"\'", "'").replace(r'\"', '"').replace(r'\`', '`')
         return s

@@ -1,3 +1,4 @@
+import abc
 import re
 import typing as typ
 
@@ -158,3 +159,104 @@ class Filter(_core.Operation):
             if (self._regex.search(chunk) is not None) ^ self._invert:
                 res.append(chunk)
         return self._delimiter.join(res)
+
+
+class RemoveBom(_core.Operation):
+    """Remove the Byte Order Mark (BOM) from a UTF-8 string."""
+
+    def apply(self, s: str) -> str:
+        bytes_ = bytes(s, 'utf8')
+        if bytes_[:3] == b'\xEF\xBB\xBF':
+            return bytes_[3:].decode('utf8')
+        return s
+
+
+class _TakeChunk(_core.Operation, abc.ABC):
+    """Base class for operations that take string slices."""
+
+    def __init__(self, delimiter: str):
+        self._delimiter = delimiter
+
+    def get_params(self) -> typ.Dict[str, typ.Any]:
+        return {
+            'delimiter': self._delimiter,
+        }
+
+    @abc.abstractmethod
+    def _take(self, s: typ.List[str]) -> typ.List[str]:
+        pass
+
+    def apply(self, s: str) -> str:
+        return self._delimiter.join(self._take(s.split(self._delimiter)))
+
+
+class Head(_TakeChunk):
+    """Keep only the n first substrings."""
+
+    def __init__(self, delimiter: str = '\n', n: int = 10):
+        """Create a head operation.
+
+        :param delimiter: The string to split the text with.
+        :param n: The number of substrings to keep from the start.
+        """
+        super().__init__(delimiter=delimiter)
+        self._n = n
+
+    def get_params(self) -> typ.Dict[str, typ.Any]:
+        return {
+            **super().get_params(),
+            'n': self._n,
+        }
+
+    def _take(self, s: typ.List[str]) -> typ.List[str]:
+        return s[:self._n]
+
+
+class Tail(_TakeChunk):
+    """Keep only the n last substrings."""
+
+    def __init__(self, delimiter: str = '\n', n: int = 10):
+        """Create a tail operation.
+
+        :param delimiter: The string to split the text with.
+        :param n: The number of substrings to keep from the end.
+        """
+        super().__init__(delimiter=delimiter)
+        self._n = n
+
+    def get_params(self) -> typ.Dict[str, typ.Any]:
+        return {
+            **super().get_params(),
+            'n': self._n,
+        }
+
+    def _take(self, s: typ.List[str]) -> typ.List[str]:
+        return s[-self._n:]
+
+
+class Slice(_TakeChunk):
+    """Keep only the substrings in the specified range."""
+
+    def __init__(self, delimiter: str = '\n', start: int = None, end: int = None, step: int = 1):
+        """Create a slice operation.
+
+        :param delimiter: The string to split the text with.
+        :param start: Slice’s first index.
+        :param end: Slice’s last index (exclusive).
+        :param step: Slice’s step.
+        """
+        super().__init__(delimiter=delimiter)
+        self._start = start
+        self._end = end
+        self._step = step
+
+    def get_params(self) -> typ.Dict[str, typ.Any]:
+        return {
+            **super().get_params(),
+            'start': self._start,
+            'end': self._end,
+            'step': self._step,
+        }
+
+    def _take(self, s: typ.List[str]) -> typ.List[str]:
+        return s[self._start:self._end:self._step]

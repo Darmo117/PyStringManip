@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import sys
 import threading
 import typing as typ
 
@@ -17,9 +16,6 @@ class Logger:
         self._name = name
         self._level = level
 
-    def warning(self, o):
-        self._print(o, prefix='[WARN]', out=sys.stderr)
-
     def print_operation(self, s: str):
         if self._level >= self.OPERATIONS:
             self._print(f'-> {s}')
@@ -32,8 +28,8 @@ class Logger:
         if self._level >= self.DEBUG:
             self._print(o, prefix='[DEBUG]')
 
-    def _print(self, o, prefix: str = '', out=sys.stdout):
-        print(f'[{self._name}]' + prefix, o, file=out)
+    def _print(self, o, prefix: str = ''):
+        print(f'[{self._name}]' + prefix, o)
 
 
 class Pipeline:
@@ -83,7 +79,6 @@ class Pipeline:
         :return: The transformed string.
         """
         if not self._operations:
-            self._logger.warning('pipeline is empty')
             return s
 
         buffer = s

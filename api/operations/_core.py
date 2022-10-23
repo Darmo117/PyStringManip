@@ -24,7 +24,7 @@ class Operation(abc.ABC):
 
     def __str__(self):
         op_name = self.format_operation_name(self.__class__.__name__)
-        args = ",".join(f'{k}={v!r}' for k, v in sorted(self.get_params().items(), key=lambda e: e[0]))
+        args = ",".join(f'{k}={v!r}' for k, v in self.get_params().items())
         return f'{op_name}[{args}]'
 
     @staticmethod

@@ -86,3 +86,32 @@ class Occurrences(_core.Operation):
 
     def apply(self, s: str) -> str:
         return str(len(self._regex.findall(s)))
+
+
+class CheckSimilarities(_core.Operation):
+    """Check which characters are at the same place in all substrings."""
+
+    def __init__(self, delimiter: str = '\n'):
+        """Create a similarities checking operation.
+
+        :param delimiter: The string to use to split inputs.
+        """
+        self._delimiter = delimiter
+
+    def get_params(self) -> typ.Dict[str, typ.Any]:
+        return {
+            'delimiter': self._delimiter,
+        }
+
+    def apply(self, s: str) -> str:
+        lines = s.split(self._delimiter)
+        if len(lines) < 2:
+            raise ValueError('not enough values to compare')
+        length = min(map(len, lines))
+        flags = ''
+        for i in range(length):
+            if all(lines[0][i] == lines[j][i] for j in range(1, len(lines))):
+                flags += '^'
+            else:
+                flags += ' '
+        return '\n'.join(lines + [flags])

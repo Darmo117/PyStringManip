@@ -87,6 +87,7 @@ def main():
     class SpecialOperations:
         FORK = 'fork'
         MERGE = 'merge'
+        SKIP = 'skip'
 
     try:
         operations_config = parse_args()
@@ -96,7 +97,11 @@ def main():
     data = sys.stdin.read()
 
     pipeline: pl.Pipeline | pl.ParallelPipeline = pl.Pipeline(verbosity=operations_config.verbosity)
+    skip = 0
     for i, operation in enumerate(operations_config.operations):
+        if skip > 0:
+            skip -= 1
+            continue
         try:
             match operation.name:
                 case SpecialOperations.FORK:
@@ -109,6 +114,8 @@ def main():
                     if 'joiner' in operation.args:
                         args = {'joiner': operation.args['joiner']}
                     pipeline = pipeline.merge(**args)
+                case SpecialOperations.SKIP:
+                    skip = operation.args.get('n', 1)
                 case name:
                     pipeline = pipeline.then(ops.create_operation(name, **operation.args))
         except Exception as e:

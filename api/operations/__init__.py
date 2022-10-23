@@ -44,6 +44,12 @@ _OPS_METADATA = {
             ' substrings were before they were forked.',
         special=True,
     ),
+    'skip': OperationMetadata(
+        name='skip',
+        args={'n': ArgMetadata(type=int, default_value=1, doc='The number of operations to skip after this one.')},
+        doc='Skips the next n operations. Should be reserved for debug purposes only.',
+        special=True,
+    ),
 }
 
 

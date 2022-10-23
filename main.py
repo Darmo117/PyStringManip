@@ -2,6 +2,7 @@ import argparse
 import dataclasses
 import re
 import sys
+import traceback
 import typing as typ
 
 from api import operations as ops, pipeline as pl
@@ -112,14 +113,14 @@ def main():
                     pipeline = pipeline.then(ops.create_operation(name, **operation.args))
         except Exception as e:
             if operations_config.verbosity >= pl.Logger.DEBUG:
-                print(e, file=sys.stderr)
+                traceback.print_exc(file=sys.stderr)
             print(f'Error at operation {operation.name!r} (#{i + 1}): {e}', file=sys.stderr)
             return
     try:
         print(pipeline.execute(data))
     except Exception as e:
         if operations_config.verbosity >= pl.Logger.DEBUG:
-            print(e, file=sys.stderr)
+            traceback.print_exc(file=sys.stderr)
         print('Error:', e, file=sys.stderr)
 
 

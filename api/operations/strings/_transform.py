@@ -191,7 +191,7 @@ class _TakeChunk(_core.Operation, abc.ABC):
 
 
 class Head(_TakeChunk):
-    """Keep only the n first substrings."""
+    """Keep only the first n substrings."""
 
     def __init__(self, delimiter: str = '\n', n: int = 10):
         """Create a head operation.
@@ -213,7 +213,7 @@ class Head(_TakeChunk):
 
 
 class Tail(_TakeChunk):
-    """Keep only the n last substrings."""
+    """Keep only the last n substrings."""
 
     def __init__(self, delimiter: str = '\n', n: int = 10):
         """Create a tail operation.
@@ -260,3 +260,40 @@ class Slice(_TakeChunk):
 
     def _take(self, s: typ.List[str]) -> typ.List[str]:
         return s[self._start:self._end:self._step]
+
+
+class _TakeBytes(_core.Operation, abc.ABC):
+    """Base class for operations that take/drop byte slices."""
+
+    def __init__(self, encoding: str = 'utf8', start: int = 0, n: int = 10):
+        """Create bytes slicing operation.
+
+        :param encoding: The text’s encoding.
+        :param start: Index of the first byte of the range.
+        :param n: The number of bytes.
+        """
+        self._encoding = encoding
+        self._start = start
+        self._n = n
+
+    def get_params(self) -> typ.Dict[str, typ.Any]:
+        return {
+            'encoding': self._encoding,
+            'start': self._start,
+            'n': self._n,
+        }
+
+
+class TakeBytes(_TakeBytes):
+    """Keep only the bytes within the specified range."""
+
+    def apply(self, s: str) -> str:
+        return bytes(s, self._encoding)[self._start:self._start + self._n].decode(self._encoding)
+
+
+class DropBytes(_TakeBytes):
+    """Drop the bytes within the specified range."""
+
+    def apply(self, s: str) -> str:
+        bytes_ = bytes(s, self._encoding)
+        return (bytes_[:self._start] + bytes_[self._start + self._n:]).decode(self._encoding)

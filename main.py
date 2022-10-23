@@ -116,6 +116,8 @@ def main():
                     pipeline = pipeline.merge(**args)
                 case SpecialOperations.SKIP:
                     skip = operation.args.get('n', 1)
+                    if skip < 0:
+                        raise ValueError(f'expected positive integer, got {skip}')
                 case name:
                     pipeline = pipeline.then(ops.create_operation(name, **operation.args))
         except Exception as e:

@@ -46,7 +46,7 @@ class Replace(_core.Operation):
          'i' for case insensitiveness, 'm' to make '^' and '$' match the start and end of lines,
          'x' to ignore whitespace, 'g' to continue after the first match, 'a' to match only ASCII characters.
         """
-        self._regex = re.compile(regex)
+        self._regex = re.compile(regex, flags=utils.regex_flags_to_int(flags))
         self._repl = repl
         self._flags = flags
 
@@ -58,9 +58,7 @@ class Replace(_core.Operation):
         }
 
     def apply(self, s: str) -> str:
-        return re.sub(self._regex, self._repl, s,
-                      flags=utils.regex_flags_to_int(self._flags),
-                      count='g' not in self._flags)
+        return self._regex.sub(self._repl, s, count='g' not in self._flags)
 
 
 class Occurrences(_core.Operation):

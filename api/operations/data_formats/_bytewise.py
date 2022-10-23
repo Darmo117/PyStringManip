@@ -27,6 +27,8 @@ class _BytewiseOperation(_core.Operation, abc.ABC):
 class _BytesToBase(_BytewiseOperation):
     """Base class for all operations that convert a string’s bytes to a list of base-n numbers."""
 
+    _DIGITS = '0123456789abcdefghijklmnopqrstuvwxyz'
+
     def __init__(self, encoding: str = 'utf8', uppercase: bool = False, joiner: str = ' ', bpl: int = 0,
                  pad: bool = False, base: int = 10, expose_base: bool = False):
         """Create a to_base operation.
@@ -51,6 +53,7 @@ class _BytesToBase(_BytewiseOperation):
     def get_params(self) -> typ.Dict[str, typ.Any]:
         params = {
             **super().get_params(),
+            'pad': self._pad,
             'uppercase': self._uppercase,
             'bpl': self._bytes_per_line,
         }
@@ -68,11 +71,10 @@ class _BytesToBase(_BytewiseOperation):
         return '\n'.join(self._delimiter.join(line) for line in buffer)
 
     def _format(self, n: int) -> str:
-        flag = {2: 'b', 8: 'o', 16: 'x'}.get(self._base)
-        padding_length = math.ceil(math.log(256) / math.log(self._base))
+        flag = {2: 'bb', 8: 'oo', 16: 'xX'}.get(self._base)
+        padding_length = math.ceil(math.log(256) / math.log(self._base)) if self._pad else 0
         if flag:
-            true_flag = flag.upper() if self._base > 10 and self._uppercase else flag
-            return format(n, f'0{padding_length}{true_flag}')
+            return format(n, f'0{padding_length}{flag[self._uppercase]}')
         else:
             res = ''
             while n >= self._base:
@@ -81,13 +83,11 @@ class _BytesToBase(_BytewiseOperation):
             res = (self._DIGITS[n % self._base] + res).rjust(padding_length, '0')
             return res.upper() if self._base > 10 and self._uppercase else res
 
-    _DIGITS = '0123456789abcdefghijklmnopqrstuvwxyz'
-
 
 class BytesToBaseN(_BytesToBase):
     """Convert a string’s bytes to their base-n representation using the specified delimiter."""
 
-    def __init__(self, encoding: str = 'utf8', base: int = 10, pad: bool = False, uppercase: bool = False,
+    def __init__(self, encoding: str = 'utf8', base: int = 10, pad: bool = True, uppercase: bool = False,
                  joiner: str = ' ', bpl: int = 0):
         """Create a to_base_n operation.
 
@@ -106,7 +106,7 @@ class BytesToBaseN(_BytesToBase):
 class BytesToHex(_BytesToBase):
     """Convert a string’s bytes to their hexadecimal representation using the specified delimiter."""
 
-    def __init__(self, encoding: str = 'utf8', pad: bool = False, uppercase: bool = False, joiner: str = ' ',
+    def __init__(self, encoding: str = 'utf8', pad: bool = True, uppercase: bool = False, joiner: str = ' ',
                  bpl: int = 0):
         """Create a to_hex operation.
 
@@ -123,7 +123,7 @@ class BytesToHex(_BytesToBase):
 class BytesToOctal(_BytesToBase):
     """Convert a string’s bytes to their octal representation using the specified delimiter."""
 
-    def __init__(self, encoding: str = 'utf8', pad: bool = False, uppercase: bool = False, joiner: str = ' ',
+    def __init__(self, encoding: str = 'utf8', pad: bool = True, uppercase: bool = False, joiner: str = ' ',
                  bpl: int = 0):
         """Create a to_octal operation.
 
@@ -140,7 +140,7 @@ class BytesToOctal(_BytesToBase):
 class BytesToBinary(_BytesToBase):
     """Convert a string’s bytes to their octal representation using the specified delimiter."""
 
-    def __init__(self, encoding: str = 'utf8', pad: bool = False, uppercase: bool = False, joiner: str = ' ',
+    def __init__(self, encoding: str = 'utf8', pad: bool = True, uppercase: bool = False, joiner: str = ' ',
                  bpl: int = 0):
         """Create a to_binary operation.
 

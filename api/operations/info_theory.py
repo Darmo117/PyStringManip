@@ -62,3 +62,27 @@ class CoincidenceIndex(_core.Operation):
         c = len(counts)
         # https://en.wikipedia.org/wiki/Index_of_coincidence
         return sum(ni * (ni - 1) for ni in counts.values()) / (n * (n - 1) / c)
+
+
+class HammingDistance(_core.Operation):
+    """Compute the Hamming distance between two strings."""
+
+    def __init__(self, delimiter: str = '\n'):
+        """Create a Hamming distance computation operation.
+
+        :param delimiter: The string to use to split the two inputs.
+        """
+        self._delimiter = delimiter
+
+    def get_params(self) -> typ.Dict[str, typ.Any]:
+        return {
+            'delimiter': self._delimiter,
+        }
+
+    def apply(self, s: str) -> str:
+        strings = s.split(self._delimiter)
+        if len(strings) != 2:
+            raise ValueError(f'expected 2 substrings, got {len(strings)}')
+        if len(strings[0]) != len(strings[1]):
+            raise ValueError('substrings must be of the same length')
+        return str(sum(c1 != c2 for c1, c2 in zip(*strings)))

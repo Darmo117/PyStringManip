@@ -42,7 +42,7 @@ class _UnicodeChars(_core.Operation, abc.ABC):
     _UTF16BE = 'utf16be'
     _PYTHON = 'python'
 
-    def __init__(self, mode: str = r'utf16be'):
+    def __init__(self, mode: str = _UTF16BE):
         """Create a Unicode escape operation.
 
         :param mode: The prefix to prepend to the codepoints.

@@ -360,3 +360,28 @@ class Unescape(_core.Operation):
             s = s.replace(c, repl)
         s = s.replace(r"\'", "'").replace(r'\"', '"').replace(r'\`', '`')
         return s
+
+
+class ExpandCharsRange(_core.Operation):
+    """Expand regex-like character ranges."""
+
+    _RANGE_REGEX = re.compile(r'(.)-(.)')
+
+    def __init__(self, joiner: str = ''):
+        """Create an expand range operation.
+
+        :param joiner: The string to use to separate each character in the expanded range.
+        """
+        self._joiner = joiner
+
+    def get_params(self) -> typ.Dict[str, typ.Any]:
+        return {
+            'joiner': self._joiner,
+        }
+
+    def apply(self, s: str) -> str:
+        return self._RANGE_REGEX.sub(self._repl, s)
+
+    def _repl(self, match: typ.Match[str]) -> str:
+        start, end = match.groups()
+        return self._joiner.join(map(chr, range(ord(start), ord(end) + 1)))

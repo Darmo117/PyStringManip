@@ -53,7 +53,7 @@ Anchor: {parsed_url.fragment}\
 
 
 class DefangUrls(_core.Operation):
-    """Defang a URL, i.e. make it invalid to avoid accidental clicks on potential malicious links."""
+    """Defang all URLs and domains, i.e. make it invalid to avoid accidental clicks on potential malicious links."""
 
     _DOT_REGEX = re.compile(r'(?<=\w)\.(?=\w)')
     _SEP_REGEX = re.compile(r'(?<=\w)://(?=\w)')

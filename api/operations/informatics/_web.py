@@ -52,7 +52,7 @@ Anchor: {parsed_url.fragment}\
 """
 
 
-class DefangUrl(_core.Operation):
+class DefangUrls(_core.Operation):
     """Defang a URL, i.e. make it invalid to avoid accidental clicks on potential malicious links."""
 
     _DOT_REGEX = re.compile(r'(?<=\w)\.(?=\w)')

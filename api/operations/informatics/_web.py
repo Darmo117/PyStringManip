@@ -1,9 +1,12 @@
+import abc
 import io
+import json
 import re
 import typing as typ
 import urllib.parse
 
 import bs4
+import jsonpath
 import lxml.etree
 import lxml.html
 
@@ -93,13 +96,13 @@ class RemoveHtml(_core.Operation):
         return self._WS_REGEX.sub('\n', self._TRAILING_WS_REGEX.sub('', text))
 
 
-class Xpath(_core.Operation):
-    """Extract data from a XML document with an XPath query."""
+class _QueryPath(_core.Operation, abc.ABC):
+    """Base class for XPath and JPath operations."""
 
     def __init__(self, query: str = '', joiner: str = '\n'):
-        """Create a XPath extractor.
+        """Create a XPath/JPath extractor.
 
-        :param query: The XPath query.
+        :param query: The query.
         :param joiner: The string to use to join results.
         """
         self._query = query
@@ -111,6 +114,10 @@ class Xpath(_core.Operation):
             'joiner': self._joiner,
         }
 
+
+class Xpath(_QueryPath):
+    """Extract data from a XML document with an XPath query."""
+
     def apply(self, s: str) -> str:
         def _str(e) -> str:
             if isinstance(e, str):
@@ -119,3 +126,11 @@ class Xpath(_core.Operation):
 
         r = lxml.etree.parse(io.StringIO(s)).xpath(self._query)
         return self._joiner.join(map(_str, r))
+
+
+class Jpath(_QueryPath):
+    """Extract data from a JSON document with a JPath query."""
+
+    def apply(self, s: str) -> str:
+        r = jsonpath.JSONPath(self._query).parse(json.loads(s))
+        return self._joiner.join(map(str, r))

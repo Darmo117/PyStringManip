@@ -7,10 +7,10 @@ class DefangIpAddresses(_core.Operation):
     """Defang all IPv4 and IPv6 addresses,
     i.e. make them invalid to remove the risk of accidently using them as IP addresses."""
 
-    _IPV4_REGEX = re.compile(
+    IPV4_REGEX = re.compile(
         r'((2(5[0-6]|[0-4]\d)|1?\d{2}|\d{1,2})\.){3}(2(5[0-6]|[0-4]\d)|1?\d{2}|\d{1,2})')
     # https://stackoverflow.com/a/17871737/3779986
-    _IPV6_REGEX = re.compile(r"""(
+    IPV6_REGEX = re.compile(r"""(
 ([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}|            # 1:2:3:4:5:6:7:8
 ([0-9a-fA-F]{1,4}:){1,7}:|                         # 1::                              1:2:3:4:5:6:7::
 ([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|         # 1::8             1:2:3:4:5:6::8  1:2:3:4:5:6::8
@@ -31,5 +31,5 @@ fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]+| # fe80::7:8%eth0   fe80::7:8%1 (link
 )""", re.VERBOSE)
 
     def apply(self, s: str) -> str:
-        s = self._IPV4_REGEX.sub(lambda m: m.group().replace('.', '[.]'), s)
-        return self._IPV6_REGEX.sub(lambda m: m.group().replace(':', '[:]'), s)
+        s = self.IPV4_REGEX.sub(lambda m: m.group().replace('.', '[.]'), s)
+        return self.IPV6_REGEX.sub(lambda m: m.group().replace(':', '[:]'), s)

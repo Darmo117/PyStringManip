@@ -97,7 +97,7 @@ class RemoveHtml(_core.Operation):
 
 
 class _QueryPath(_core.Operation, abc.ABC):
-    """Base class for XPath and JPath operations."""
+    """Base class for XPath, JPath and CSS selector operations."""
 
     def __init__(self, query: str = '', joiner: str = '\n'):
         """Create a XPath/JPath extractor.
@@ -133,4 +133,12 @@ class Jpath(_QueryPath):
 
     def apply(self, s: str) -> str:
         r = jsonpath.JSONPath(self._query).parse(json.loads(s))
+        return self._joiner.join(map(str, r))
+
+
+class CssSelector(_QueryPath):
+    """Extract data from a HTML document with a CSS selector."""
+
+    def apply(self, s: str) -> str:
+        r = bs4.BeautifulSoup(s, 'lxml').select(self._query)
         return self._joiner.join(map(str, r))

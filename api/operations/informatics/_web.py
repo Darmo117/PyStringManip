@@ -1,6 +1,11 @@
+import io
 import re
 import typing as typ
 import urllib.parse
+
+import bs4
+import lxml.etree
+import lxml.html
 
 from .. import _core
 
@@ -75,3 +80,42 @@ class DefangUrls(_core.Operation):
         if self._escape_sep:
             s = self._SEP_REGEX.sub('[://]', s)
         return s
+
+
+class RemoveHtml(_core.Operation):
+    """Remove all HTML/XML tags."""
+
+    _WS_REGEX = re.compile(r'\n+')
+    _TRAILING_WS_REGEX = re.compile(r'(^[\t ]+|[\t ]+$)', flags=re.MULTILINE)
+
+    def apply(self, s: str) -> str:
+        text = bs4.BeautifulSoup(s, 'lxml').text.strip()
+        return self._WS_REGEX.sub('\n', self._TRAILING_WS_REGEX.sub('', text))
+
+
+class Xpath(_core.Operation):
+    """Extract data from a XML document with an XPath query."""
+
+    def __init__(self, query: str = '', joiner: str = '\n'):
+        """Create a XPath extractor.
+
+        :param query: The XPath query.
+        :param joiner: The string to use to join results.
+        """
+        self._query = query
+        self._joiner = joiner
+
+    def get_params(self) -> typ.Dict[str, typ.Any]:
+        return {
+            'query': self._query,
+            'joiner': self._joiner,
+        }
+
+    def apply(self, s: str) -> str:
+        def _str(e) -> str:
+            if isinstance(e, str):
+                return e
+            return lxml.html.tostring(e).decode('utf8').strip()
+
+        r = lxml.etree.parse(io.StringIO(s)).xpath(self._query)
+        return self._joiner.join(map(_str, r))

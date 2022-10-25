@@ -142,3 +142,41 @@ class CssSelector(_QueryPath):
     def apply(self, s: str) -> str:
         r = bs4.BeautifulSoup(s, 'lxml').select(self._query)
         return self._joiner.join(map(str, r))
+
+
+class ExtractUrls(_core.Operation):
+    """Extract all URLs."""
+
+    _URL_REGEX = re.compile(r"""\w*://[\w.-]+(?:\.[\w.-]+)+[-\w._~:/?#\[\]@!$&'()*+,;=]+""")
+
+    def __init__(self, display_total: bool = False, sort: bool = False, unique: bool = False, joiner: str = '\n'):
+        """Create a URL extractor.
+
+        :param display_total: Whether to display the total number of extracted URLs.
+        :param sort: Whether to sort the URLs.
+        :param unique: Whether to remove duplicate URLs.
+        :param joiner: The string to join the extracted URLs with.
+        """
+        self._display_total = display_total
+        self._sort = sort
+        self._unique = unique
+        self._joiner = joiner
+
+    def get_params(self) -> typ.Dict[str, typ.Any]:
+        return {
+            'display_total': self._display_total,
+            'sort': self._sort,
+            'unique': self._unique,
+            'joiner': self._joiner,
+        }
+
+    def apply(self, s: str) -> str:
+        urls = self._URL_REGEX.findall(s)
+        if self._unique:
+            urls = list(set(urls))
+        if self._sort:
+            urls.sort()
+        res = self._joiner.join(urls)
+        if self._display_total:
+            res = f'Total found: {len(urls)}\n\n' + res
+        return res

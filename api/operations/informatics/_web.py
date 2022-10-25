@@ -171,7 +171,12 @@ class ExtractUrls(_core.Operation):
         }
 
     def apply(self, s: str) -> str:
+        return self._extract_urls(s)
+
+    def _extract_urls(self, s: str, f: typ.Callable[[str], str] = None) -> str:
         urls = self._URL_REGEX.findall(s)
+        if f:
+            urls = list(map(f, urls))
         if self._unique:
             urls = list(set(urls))
         if self._sort:
@@ -180,3 +185,10 @@ class ExtractUrls(_core.Operation):
         if self._display_total:
             res = f'Total found: {len(urls)}\n\n' + res
         return res
+
+
+class ExtractDomains(ExtractUrls):
+    """Extract all URL domains."""
+
+    def apply(self, s: str) -> str:
+        return self._extract_urls(s, lambda url: urllib.parse.urlparse(url).netloc)

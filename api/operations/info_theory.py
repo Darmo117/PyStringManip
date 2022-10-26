@@ -4,6 +4,7 @@ import re
 import typing as typ
 
 from . import _core
+from .. import utils
 
 
 class Entropy(_core.Operation):
@@ -72,7 +73,7 @@ class HammingDistance(_core.Operation):
 
         :param delimiter: The string to use to split the two inputs.
         """
-        self._delimiter = delimiter
+        self._delimiter = utils.unescape(delimiter)
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
         return {

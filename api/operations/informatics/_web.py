@@ -11,6 +11,7 @@ import lxml.etree
 import lxml.html
 
 from .. import _core
+from .. import utils
 
 
 class EncodeUrl(_core.Operation):
@@ -106,7 +107,7 @@ class _QueryPath(_core.Operation, abc.ABC):
         :param joiner: The string to use to join results.
         """
         self._query = query
-        self._joiner = joiner
+        self._joiner = utils.unescape(joiner)
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
         return {

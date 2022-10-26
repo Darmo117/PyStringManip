@@ -13,7 +13,7 @@ class RemoveWhitespace(_core.Operation):
 
         :param exclude: The list of whitespace characters to keep.
         """
-        if match := re.search(r'(\S)', utils.unescape_whitespace(exclude)):
+        if match := re.search(r'(\S)', utils.unescape(exclude)):
             raise ValueError(
                 f'found non-whitespace character in exclusion list at index {match.start(1) + 1}: {match.group(1)!r}')
         self._exclude = exclude
@@ -47,7 +47,7 @@ class Replace(_core.Operation):
          'x' to ignore whitespace, 'g' to continue after the first match, 'a' to match only ASCII characters.
         """
         self._regex = re.compile(regex, flags=utils.regex_flags_to_int(flags))
-        self._repl = repl
+        self._repl = utils.unescape(repl)
         self._flags = flags
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
@@ -96,7 +96,7 @@ class CheckSimilarities(_core.Operation):
 
         :param delimiter: The string to use to split inputs.
         """
-        self._delimiter = delimiter
+        self._delimiter = utils.unescape(delimiter)
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
         return {

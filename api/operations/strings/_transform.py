@@ -87,7 +87,7 @@ class Sort(_core.Operation):
         }
         if mode not in self._sort_functions:
             raise ValueError(f'invalid sort mode: {mode}')
-        self._delimiter = delimiter
+        self._delimiter = utils.unescape(delimiter)
         self._mode = mode
         self._reverse = reverse
 
@@ -111,7 +111,7 @@ class Unique(_core.Operation):
 
         :param delimiter: The string to split the text with.
         """
-        self._delimiter = delimiter
+        self._delimiter = utils.unescape(delimiter)
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
         return {
@@ -139,7 +139,7 @@ class Filter(_core.Operation):
          'x' to ignore whitespace, 'a' to match only ASCII characters.
         :param invert: If true, filters out strings that do match the regex.
         """
-        self._delimiter = delimiter
+        self._delimiter = utils.unescape(delimiter)
         self._regex = re.compile(regex, flags=utils.regex_flags_to_int(flags))
         self._flags = flags
         self._invert = invert
@@ -175,7 +175,7 @@ class _TakeChunk(_core.Operation, abc.ABC):
     """Base class for operations that take string slices."""
 
     def __init__(self, delimiter: str):
-        self._delimiter = delimiter
+        self._delimiter = utils.unescape(delimiter)
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
         return {

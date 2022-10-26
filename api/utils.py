@@ -13,12 +13,13 @@ def flip_dict(d: dict) -> dict:
     return {v: k for k, v in d.items()}
 
 
-def unescape_whitespace(s: str) -> str:
-    return (s.replace(r'\n', '\n')
-            .replace(r'\r', '\r')
-            .replace(r'\t', '\t')
-            .replace(r'\f', '\f')
-            .replace(r'\v', '\v'))
+def unescape(s: str) -> str:
+    """Unescape all escaped characters.
+
+    :param s: The string to unescape.
+    :return: The unescaped string.
+    """
+    return s.encode('utf8').decode('unicode_escape')
 
 
 def regex_flags_to_int(flags: str) -> int:

@@ -172,8 +172,8 @@ class _MorseCode(_core.Operation, abc.ABC):
         """
         self._dot = dot
         self._dash = dash
-        self._letter_sep = letter_sep
-        self._word_sep = word_sep
+        self._letter_sep = utils.unescape(letter_sep)
+        self._word_sep = utils.unescape(word_sep)
         self._extended = extended
 
     def get_params(self) -> typ.Dict[str, typ.Any]:

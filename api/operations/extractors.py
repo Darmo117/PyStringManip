@@ -207,9 +207,9 @@ class Regex(_core.Operation):
         self._flags = flags
         self._display_total = display_total
         self._output_format = output_format
-        self._joiner = joiner
-        self._match_groups_joiner = match_groups_joiner
-        self._groups_joiner = groups_joiner
+        self._joiner = utils.unescape(joiner)
+        self._match_groups_joiner = utils.unescape(match_groups_joiner)
+        self._groups_joiner = utils.unescape(groups_joiner)
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
         return {

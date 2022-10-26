@@ -3,6 +3,7 @@ import math
 import typing as typ
 
 from .. import _core
+from ... import utils
 
 
 class _BytewiseOperation(_core.Operation, abc.ABC):
@@ -15,7 +16,7 @@ class _BytewiseOperation(_core.Operation, abc.ABC):
         :param delimiter: String to split the input string on.
         """
         self._encoding = encoding
-        self._delimiter = delimiter
+        self._delimiter = utils.unescape(delimiter)
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
         return {

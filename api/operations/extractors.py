@@ -192,13 +192,16 @@ class Regex(_core.Operation):
 
     def __init__(self, regex: str = '', flags: str = 'm', display_total: bool = False, output_format: str = _MATCHES,
                  joiner: str = '\n', match_groups_joiner: str = '\n\t', groups_joiner: str = ','):
-        r"""Create a regex extractor.
+        f"""Create a regex extractor.
 
         :param regex: The substring to find in modes 's' and 'x' or the regex in mode 'r'.
         :param flags: The list of regex flags: 's' to make the dot match new lines,
          'i' for case insensitiveness, 'm' to make '^' and '$' match the start and end of lines,
          'x' to ignore whitespace, 'a' to match only ASCII characters.
         :param joiner: The string to use to join the matches.
+        :param match_groups_joiner: The string to use to join matches with their capture groups in
+         {self._MATCHES_GROUPS!r} mode.
+        :param groups_joiner: The string to use to join capture groups.
         """
         self._regex = re.compile(regex, flags=utils.regex_flags_to_int(flags))
         self._flags = flags

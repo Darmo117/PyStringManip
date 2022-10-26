@@ -33,14 +33,14 @@ class _Extractor(_core.Operation, abc.ABC):
         }
 
     def apply(self, s: str) -> str:
-        urls = self._extract(s)
+        values = self._extract(s)
         if self._unique:
-            urls = list(set(urls))
+            values = list(set(values))
         if self._sort:
-            urls.sort()
-        res = self._joiner.join(urls)
+            values.sort()
+        res = self._joiner.join(values)
         if self._display_total:
-            res = f'Total found: {len(urls)}\n\n' + res
+            res = f'Total found: {len(values)}\n\n' + res
         return res
 
     @abc.abstractmethod
@@ -87,6 +87,15 @@ class ExtractIps(_Extractor):
         return ips
 
 
+class ExtractMacAddresses(_Extractor):
+    """Extract all MAC addresses."""
+
+    _MAC_ADDRESS_REGEX = re.compile(r'(?:[a-fA-F\d]{1,2}:){5}[a-fA-F\d]{1,2}')
+
+    def _extract(self, s: str) -> typ.List[str]:
+        return self._MAC_ADDRESS_REGEX.findall(s)
+
+
 class ExtractUrls(_Extractor):
     """Extract all URLs."""
 
@@ -127,3 +136,47 @@ class ExtractEmails(_Extractor):
 
     def _extract(self, s: str) -> typ.List[str]:
         return self._EMAIL_REGEX.findall(s)
+
+
+class ExtractFilePaths(_Extractor):
+    """Extract all file paths."""
+
+    # Illegal characters: https://stackoverflow.com/a/31976060/3779986
+    _UNIX_FP_REGEX = re.compile(r'/(?:[^/\0\n\r]+/?)+|(?:[^/\0\n\r]+/)+[^/\0\n\r]*')
+    _UNIX_FP_REGEX_NO_WS = re.compile(_UNIX_FP_REGEX.pattern.replace(r'\n\r', r'\s'))
+    _WINDOWS_FP_REGEX = re.compile(
+        r'[a-zA-Z]:\\(?:[^\\<>:"/|?*\x00-\x1f\n\r]+\\?)+|(?:[^\\<>:"/|?*\x00-\x1f\n\r]+\\)+[^\\<>:"/|?*\x00-\x1f\n\r]*')
+    _WINDOWS_FP_REGEX_NO_WS = re.compile(_WINDOWS_FP_REGEX.pattern.replace(r'\n\r', r'\s'))
+
+    def __init__(self, display_total: bool = False, sort: bool = False, unique: bool = False,
+                 unix: bool = True, windows: bool = True, exclude_ws: bool = True, joiner: str = '\n'):
+        """Create a file path extractor.
+
+        :param display_total: Whether to display the total number of results.
+        :param sort: Whether to sort the results.
+        :param unique: Whether to remove duplicate results.
+        :param unix: Whether to extract UNIX paths.
+        :param windows: Whether to extract Windows paths.
+        :param exclude_ws: Whether to exclude all whitespace characters.
+        :param joiner: The string to join the extracted results with.
+        """
+        super().__init__(display_total=display_total, sort=sort, unique=unique, joiner=joiner)
+        self._unix = unix
+        self._windows = windows
+        self._exclude_ws = exclude_ws
+
+    def get_params(self) -> typ.Dict[str, typ.Any]:
+        return {
+            **super().get_params(),
+            'unix': self._unix,
+            'windows': self._windows,
+            'exclude_ws': self._exclude_ws,
+        }
+
+    def _extract(self, s: str) -> typ.List[str]:
+        paths = []
+        if self._unix:
+            paths.extend((self._UNIX_FP_REGEX_NO_WS if self._exclude_ws else self._UNIX_FP_REGEX).findall(s))
+        if self._windows:
+            paths.extend((self._WINDOWS_FP_REGEX_NO_WS if self._exclude_ws else self._WINDOWS_FP_REGEX).findall(s))
+        return paths

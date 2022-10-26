@@ -216,7 +216,7 @@ class Regex(_core.Operation):
 
     _MATCHES = 'matches'
     _GROUPS = 'groups'
-    _MATCHES_GROUPS = 'matches and groups'
+    _MATCHES_GROUPS = 'matches_and_groups'
 
     def __init__(self, regex: str = '', flags: str = 'm', display_total: bool = False, output_format: str = _MATCHES,
                  joiner: str = '\n', match_groups_joiner: str = '\n\t', groups_joiner: str = ','):
@@ -231,6 +231,8 @@ class Regex(_core.Operation):
          {self._MATCHES_GROUPS!r} mode.
         :param groups_joiner: The string to use to join capture groups.
         """
+        if output_format not in (self._MATCHES, self._GROUPS, self._MATCHES_GROUPS):
+            raise ValueError(f'invalid output format: {output_format!r}')
         self._regex = re.compile(regex, flags=utils.regex_flags_to_int(flags))
         self._flags = flags
         self._display_total = display_total

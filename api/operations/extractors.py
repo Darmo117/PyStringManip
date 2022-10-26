@@ -6,6 +6,7 @@ import urllib.parse
 
 from . import _core
 from . import informatics
+from .. import utils
 
 
 class _Extractor(_core.Operation, abc.ABC):
@@ -180,3 +181,54 @@ class ExtractFilePaths(_Extractor):
         if self._windows:
             paths.extend((self._WINDOWS_FP_REGEX_NO_WS if self._exclude_ws else self._WINDOWS_FP_REGEX).findall(s))
         return paths
+
+
+class Regex(_core.Operation):
+    """Extract strings that match a regular expression."""
+
+    _MATCHES = 'matches'
+    _GROUPS = 'groups'
+    _MATCHES_GROUPS = 'matches and groups'
+
+    def __init__(self, regex: str = '', flags: str = 'm', display_total: bool = False, output_format: str = _MATCHES,
+                 joiner: str = '\n', match_groups_joiner: str = '\n\t', groups_joiner: str = ','):
+        r"""Create a regex extractor.
+
+        :param regex: The substring to find in modes 's' and 'x' or the regex in mode 'r'.
+        :param flags: The list of regex flags: 's' to make the dot match new lines,
+         'i' for case insensitiveness, 'm' to make '^' and '$' match the start and end of lines,
+         'x' to ignore whitespace, 'a' to match only ASCII characters.
+        :param joiner: The string to use to join the matches.
+        """
+        self._regex = re.compile(regex, flags=utils.regex_flags_to_int(flags))
+        self._flags = flags
+        self._display_total = display_total
+        self._output_format = output_format
+        self._joiner = joiner
+        self._match_groups_joiner = match_groups_joiner
+        self._groups_joiner = groups_joiner
+
+    def get_params(self) -> typ.Dict[str, typ.Any]:
+        return {
+            'regex': self._regex.pattern,
+            'flags': self._flags,
+            'display_total': self._display_total,
+            'output_format': self._output_format,
+            'joiner': self._joiner,
+            'match_groups_joiner': self._match_groups_joiner,
+            'groups_joiner': self._groups_joiner,
+        }
+
+    def apply(self, s: str) -> str:
+        def _map(m: re.Match) -> str:
+            match self._output_format:
+                case self._MATCHES:
+                    return m.group(0)
+                case self._GROUPS:
+                    return self._groups_joiner.join(m.groups())
+                case self._MATCHES_GROUPS:
+                    return f'{m.group(0)}{self._match_groups_joiner}{self._groups_joiner.join(m.groups())}'
+
+        matches = list(self._regex.finditer(s))
+        res = f'Total: {len(matches)}\n\n' if self._display_total else ''
+        return res + self._joiner.join(map(_map, matches))

@@ -1,4 +1,5 @@
 import abc
+import datetime
 import ipaddress
 import re
 import typing as typ
@@ -23,7 +24,7 @@ class _Extractor(_core.Operation, abc.ABC):
         self._display_total = display_total
         self._sort = sort
         self._unique = unique
-        self._joiner = joiner
+        self._joiner = utils.unescape(joiner)
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
         return {
@@ -181,6 +182,33 @@ class ExtractFilePaths(_Extractor):
         if self._windows:
             paths.extend((self._WINDOWS_FP_REGEX_NO_WS if self._exclude_ws else self._WINDOWS_FP_REGEX).findall(s))
         return paths
+
+
+class ExtractDates(_Extractor):
+    """Extract dates in the format "yyyy-mm-dd", "dd/mm/yyyy" or "mm/dd/yyyy".
+    Separators may be any of "/-." or space.
+    """
+
+    @staticmethod
+    def __generate(s: str):
+        for sep in '-/. ':
+            yield s.replace('§', sep)
+
+    _DATE_REGEX = re.compile(r'\d{4}(?:[-/. ]\d{2}){2}|(?:\d{2}[-/. ]){2}\d{4}')
+    _FORMATS = (*__generate('%Y§%m§%d'), *__generate('%d§%m§%Y'), *__generate('%m§%d§%Y'))
+
+    def _extract(self, s: str) -> typ.List[str]:
+        def f(m: str) -> bool:
+            for df in self._FORMATS:
+                try:
+                    datetime.datetime.strptime(m, df)
+                    return True
+                except ValueError:
+                    pass
+            return False
+
+        matches = self._DATE_REGEX.finditer(s)
+        return list(filter(f, (m.group(0) for m in matches)))
 
 
 class Regex(_core.Operation):

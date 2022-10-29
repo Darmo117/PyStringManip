@@ -53,3 +53,13 @@ class Not(_core.Operation):
 
     def apply(self, s: str) -> str:
         return str(~int(s))
+
+
+class LeftBitShift(_BitwiseOperation):
+    def _op(self, i: int) -> int:
+        return i << self._n
+
+
+class RightBitShift(_BitwiseOperation):
+    def _op(self, i: int) -> int:
+        return i >> self._n

@@ -56,10 +56,14 @@ class Not(_core.Operation):
 
 
 class LeftBitShift(_BitwiseOperation):
+    """Shift an integer’s bits by the specified amount to the left."""
+
     def _op(self, i: int) -> int:
         return i << self._n
 
 
 class RightBitShift(_BitwiseOperation):
+    """Shift an integer’s bits by the specified amount to the right, sign is preserved."""
+
     def _op(self, i: int) -> int:
         return i >> self._n

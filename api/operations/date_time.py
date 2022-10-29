@@ -10,7 +10,7 @@ class GetTime(_core.Operation):
     _UNITS = {
         's': 1_000_000_000,
         'ms': 1_000_000,
-        'us': 1000,
+        'µs': 1000,
         'ns': 1,
     }
 

@@ -385,3 +385,46 @@ class ExpandCharsRange(_core.Operation):
     def _repl(self, match: typ.Match[str]) -> str:
         start, end = match.groups()
         return self._joiner.join(map(chr, range(ord(start), ord(end) + 1)))
+
+
+class _PadLines(_core.Operation, abc.ABC):
+    """Base class for line-padding operations."""
+
+    def __init__(self, c: str = ' '):
+        """Create a line-padding operation.
+
+        :param c: The character to pad with.
+        """
+        if len(c) != 1:
+            raise ValueError('fill string must be exactly one character long')
+        self._c = c
+
+    def get_params(self) -> typ.Dict[str, typ.Any]:
+        return {
+            'c': self._c,
+        }
+
+    def apply(self, s: str) -> str:
+        lines = s.split('\n')
+        max_length = len(max(lines, key=len))
+        for i, line in enumerate(lines):
+            lines[i] = self._pad(line, max_length)
+        return '\n'.join(lines)
+
+    @abc.abstractmethod
+    def _pad(self, line: str, n: int) -> str:
+        pass
+
+
+class PadLeft(_PadLines):
+    """Left-pad each lines using the given character."""
+
+    def _pad(self, line: str, n: int) -> str:
+        return line.rjust(n, self._c)
+
+
+class PadRight(_PadLines):
+    """Right-pad each lines using the given character."""
+
+    def _pad(self, line: str, n: int) -> str:
+        return line.ljust(n, self._c)

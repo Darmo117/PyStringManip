@@ -116,6 +116,7 @@ def parse_args(args: typ.List[str]) -> Config:
             doc += f'    {arg}: {metadata.type.__name__} = {metadata.default_value!r}\n'
             if metadata.doc:
                 doc += f'      {metadata.doc}\n'
+    doc = doc.replace('%', '%%')  # Escape '%' as parser.parse_args(...) uses %-formatting on doc string
     parser.add_argument('operations', metavar='OPERATION', nargs='*', help=doc)
 
     parsed_args = parser.parse_args(args)

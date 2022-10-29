@@ -9,6 +9,7 @@ from .extractors import *
 from .info_theory import *
 from .informatics import *
 from .language import *
+from .math import *
 from .random import *
 from .strings import *
 

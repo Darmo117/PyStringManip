@@ -1,3 +1,5 @@
+import csv
+import io
 import json
 import typing as typ
 
@@ -34,61 +36,59 @@ class CsvToJson(_core.Operation):
         }
 
     def apply(self, s: str) -> str:
+        parsed_csv = csv.DictReader(io.StringIO(s), delimiter=self._value_sep, quotechar='"')
         objects = None
-        lines = s.split('\n')
         match self._mode:
             case self._ARRAYS:
-                objects = self._to_arrays(lines)
+                objects = self._to_arrays(parsed_csv)
             case self._DICTS:
-                objects = self._to_dicts(lines)
+                objects = self._to_dicts(parsed_csv)
             case self._DICT_OF_ARRAYS:
-                objects = self._to_dict_of_arrays(lines)
+                objects = self._to_dict_of_arrays(parsed_csv)
         return json.dumps(objects)
 
-    def _to_arrays(self, lines: list[str]) -> list[list[str]]:
-        data = []
+    def _to_arrays(self, lines: csv.DictReader) -> list[list[str]]:
+        if not lines.fieldnames:
+            return []
+        data = [lines.fieldnames]
         for i, line in enumerate(lines):
-            values = self._parse_line(line)
-            if self._strict and i > 0 and (len1 := len(data[-1])) != (len2 := len(values)):
+            data.append([])
+            for v in line.values():
+                if isinstance(v, list):
+                    data[-1].extend(v)
+                else:
+                    data[-1].append(v)
+            if self._strict and (len1 := len(lines.fieldnames)) != (len2 := len(data[-1])):
                 self._error(len1, len2, i)
-            data.append(values)
         return data
 
-    def _to_dicts(self, lines: list[str]) -> list[dict[str, str]]:
+    def _to_dicts(self, lines: csv.DictReader) -> list[dict[str, str]]:
+        if not lines.fieldnames:
+            return []
         data = []
-        header = []
+        header = lines.fieldnames
         for i, line in enumerate(lines):
-            values = self._parse_line(line, no_parsing=i == 0)
-            if i == 0:
-                header = values
-            else:
-                header_size = len(header)
-                row_size = len(values)
-                if self._strict and header_size != row_size:
-                    self._error(header_size, row_size, i)
-                data.append({header[j]: v for j, v in enumerate(values[:header_size])})
+            header_size = len(header)
+            row_size = len(line)
+            if self._strict and None in line:
+                self._error(header_size, row_size + len(line[None]), i)
+            data.append({k: v for k, v in line.items() if k is not None})
         return data
 
-    def _to_dict_of_arrays(self, lines: list[str]) -> dict[str, list[str]]:
-        data = {}
-        header = []
+    def _to_dict_of_arrays(self, lines: csv.DictReader) -> dict[str, list[str]]:
+        if not lines.fieldnames:
+            return {}
+        data = {k: [] for k in lines.fieldnames}
+        header = lines.fieldnames
         for i, line in enumerate(lines):
-            values = self._parse_line(line, no_parsing=i > 0)
-            if i == 0:
-                header = values
-                data = {k: [] for k in values}
-            else:
-                header_size = len(header)
-                row_size = len(values)
-                if self._strict and header_size != row_size:
-                    self._error(header_size, row_size, i)
-                for j, v in enumerate(values[:header_size]):
-                    data[header[j]].append(v)
+            header_size = len(header)
+            row_size = len(line)
+            if self._strict and None in line:
+                self._error(header_size, row_size + len(line[None]), i)
+            for k, v in line.items():
+                if k is not None:
+                    data[k].append(v)
         return data
-
-    def _parse_line(self, line: str, no_parsing: bool = False) -> list[str]:
-        # TODO allow double quotes and parse values
-        return line.split(self._value_sep)
 
     def _error(self, expected_len: int, actual_len: int, index: int):
-        raise ValueError(f'row #{index} has length {actual_len}, expected {expected_len}')
+        raise ValueError(f'row #{index + 2} has length {actual_len}, expected {expected_len}')

@@ -16,7 +16,7 @@ class _Base(_core.Operation, abc.ABC):
     def __init__(self, sep: str = ','):
         """Create an operation for number lists.
 
-        :param sep: String to use to split numbers.
+        :param sep: Numbers separator.
         """
         self._sep = sep
 

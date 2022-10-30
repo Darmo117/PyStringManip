@@ -8,6 +8,11 @@ class HaversineDist(_core.Operation):
     """Compute the Haversine distance in meters between two GPS coordinates."""
 
     def __init__(self, coords_sep: str = '\n', latlon_sep: str = ','):
+        """Create a haversine_dist operation.
+
+        :param coords_sep: Coordinates separator.
+        :param latlon_sep: Latitude/longitude separator.
+        """
         self._coords_sep = coords_sep
         self._latlon_sep = latlon_sep
 

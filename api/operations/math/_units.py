@@ -5,7 +5,15 @@ from .. import _core
 
 
 class _ConvertUnits(_core.Operation, abc.ABC):
+    """Base class for unit convertion operations."""
+
     def __init__(self, source: str, target: str, unit_coefs: typ.Dict[str, float]):
+        """Create a unit converter.
+
+        :param source: Source unit.
+        :param target: Target unit.
+        :param unit_coefs: Coefficients to go from a unit to the base unit.
+        """
         self._source_unit = source
         self._target_unit = target
         self._unit_coefs = unit_coefs
@@ -22,7 +30,7 @@ class _ConvertUnits(_core.Operation, abc.ABC):
 
 
 class ConvertDistance(_ConvertUnits):
-    """Convert a distance from a unit to another."""
+    """Convert a distance."""
 
     _COEFS = {
         # SI
@@ -79,7 +87,7 @@ class ConvertDistance(_ConvertUnits):
 
 
 class ConvertArea(_ConvertUnits):
-    """Convert an area from a unit to another."""
+    """Convert an area."""
 
     _COEFS = {
         # SI
@@ -142,7 +150,7 @@ class ConvertArea(_ConvertUnits):
 
 
 class ConvertMass(_ConvertUnits):
-    """Convert a mass from a unit to another."""
+    """Convert a mass."""
 
     _COEFS = {
         # SI
@@ -207,7 +215,7 @@ class ConvertMass(_ConvertUnits):
 
 
 class ConvertSpeed(_ConvertUnits):
-    """Convert a speed from a unit to another."""
+    """Convert a speed."""
 
     _COEFS = {
         # SI
@@ -232,7 +240,7 @@ class ConvertSpeed(_ConvertUnits):
 
 
 class ConvertDataUnit(_ConvertUnits):
-    """Convert a data amount from a unit to another."""
+    """Convert a data amount."""
 
     _COEFS = {
         # Base

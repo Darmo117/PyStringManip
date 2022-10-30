@@ -91,20 +91,20 @@ class Occurrences(_core.Operation):
 class CheckSimilarities(_core.Operation):
     """Check which characters are at the same place in all substrings."""
 
-    def __init__(self, delimiter: str = '\n'):
+    def __init__(self, sep: str = '\n'):
         """Create a similarities checking operation.
 
-        :param delimiter: The string to use to split inputs.
+        :param sep: Inputs separator.
         """
-        self._delimiter = utils.unescape(delimiter)
+        self._sep = utils.unescape(sep)
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
         return {
-            'delimiter': self._delimiter,
+            'sep': self._sep,
         }
 
     def apply(self, s: str) -> str:
-        lines = s.split(self._delimiter)
+        lines = s.split(self._sep)
         if len(lines) < 2:
             raise ValueError('not enough values to compare')
         length = min(map(len, lines))

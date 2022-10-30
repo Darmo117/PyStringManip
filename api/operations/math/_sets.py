@@ -12,7 +12,7 @@ class _SetOperation(_core.Operation, abc.ABC):
         """Create a set operation.
 
         :param sets_sep: String to use to separate the two sets.
-        :param values_sep: String to use to separate a set’s values.
+        :param values_sep: Set values separator.
         """
         self._sets_sep = sets_sep
         self._values_sep = values_sep

@@ -68,20 +68,20 @@ class CoincidenceIndex(_core.Operation):
 class HammingDistance(_core.Operation):
     """Compute the Hamming distance between two strings."""
 
-    def __init__(self, delimiter: str = '\n'):
+    def __init__(self, sep: str = '\n'):
         """Create a Hamming distance computation operation.
 
-        :param delimiter: The string to use to split the two inputs.
+        :param sep: The string to use to split the two inputs.
         """
-        self._delimiter = utils.unescape(delimiter)
+        self._sep = utils.unescape(sep)
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
         return {
-            'delimiter': self._delimiter,
+            'sep': self._sep,
         }
 
     def apply(self, s: str) -> str:
-        strings = s.split(self._delimiter)
+        strings = s.split(self._sep)
         if len(strings) != 2:
             raise ValueError(f'expected 2 substrings, got {len(strings)}')
         if len(strings[0]) != len(strings[1]):

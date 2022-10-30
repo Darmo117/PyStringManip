@@ -8,19 +8,19 @@ from ... import utils
 class _BytewiseOperation(_core.Operation, abc.ABC):
     """Base class for all bytewise numeric transformations."""
 
-    def __init__(self, encoding: str, delimiter: str):
+    def __init__(self, encoding: str, sep: str):
         """Create a bytewise operation.
 
         :param encoding: Encoding of the output string.
-        :param delimiter: String to split the input string on.
+        :param sep: String to split the input string on.
         """
         self._encoding = encoding
-        self._delimiter = utils.unescape(delimiter)
+        self._sep = utils.unescape(sep)
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
         return {
             'encoding': self._encoding,
-            'delimiter': self._delimiter,
+            'sep': self._sep,
         }
 
 
@@ -40,7 +40,7 @@ class _BytesToBase(_BytewiseOperation):
         :param base: The base to represent each byte in.
         :param expose_base: Whether the `base` parameter should be visible from the get_params() method.
         """
-        super().__init__(encoding=encoding, delimiter=joiner)
+        super().__init__(encoding=encoding, sep=joiner)
         if not (2 <= base <= 36):
             raise ValueError('base must be in [2, 36]')
         self._uppercase = uppercase
@@ -67,7 +67,7 @@ class _BytesToBase(_BytewiseOperation):
             if self._bytes_per_line > 0 and len(buffer[-1]) == self._bytes_per_line:
                 buffer.append([])
             buffer[-1].append(utils.format_int(b, self._base, uppercase=self._uppercase, pad=-self._pad))
-        return '\n'.join(self._delimiter.join(line) for line in buffer)
+        return '\n'.join(self._sep.join(line) for line in buffer)
 
 
 class BytesToBaseN(_BytesToBase):
@@ -143,15 +143,15 @@ class BytesToBinary(_BytesToBase):
 class _FromBytes(_BytewiseOperation):
     """Base class for all operations that convert a list of base-n bytes into a string."""
 
-    def __init__(self, encoding: str = 'utf8', delimiter: str = ' ', base: int = 10, expose_base: bool = False):
+    def __init__(self, encoding: str = 'utf8', sep: str = ' ', base: int = 10, expose_base: bool = False):
         """Create a from_base operation.
 
         :param encoding: Encoding of the output string.
-        :param delimiter: String to use to split each byte representation.
+        :param sep: String to use to split each byte representation.
         :param base: The base to convert each bytes from.
         :param expose_base: Whether the `base` parameter should be visible from the get_params() method.
         """
-        super().__init__(encoding=encoding, delimiter=delimiter)
+        super().__init__(encoding=encoding, sep=sep)
         self._base = base
         self._expose_base = expose_base
 
@@ -162,55 +162,55 @@ class _FromBytes(_BytewiseOperation):
         return params
 
     def apply(self, s: str) -> str:
-        if self._delimiter != '\n':
-            s = s.replace('\n', self._delimiter)
-        return bytes(int(h, self._base) for h in filter(None, s.split(self._delimiter))).decode(self._encoding)
+        if self._sep != '\n':
+            s = s.replace('\n', self._sep)
+        return bytes(int(h, self._base) for h in filter(None, s.split(self._sep))).decode(self._encoding)
 
 
 class FromBaseNBytes(_FromBytes):
     """Convert a string interpreted as a list of base-n bytes to a string with the given encoding."""
 
-    def __init__(self, encoding: str = 'utf8', delimiter: str = ' ', base: int = 10):
+    def __init__(self, encoding: str = 'utf8', sep: str = ' ', base: int = 10):
         """Create a from_base_n operation.
 
         :param encoding: Encoding of the output string.
-        :param delimiter: String to use to split each byte representation.
+        :param sep: String to use to split each byte representation.
         :param base: The base to convert each bytes from.
         """
-        super().__init__(encoding=encoding, delimiter=delimiter, base=base, expose_base=True)
+        super().__init__(encoding=encoding, sep=sep, base=base, expose_base=True)
 
 
 class FromHexBytes(_FromBytes):
     """Convert a string interpreted as a list of hexadecimal bytes to a string with the given encoding."""
 
-    def __init__(self, encoding: str = 'utf8', delimiter: str = ' '):
+    def __init__(self, encoding: str = 'utf8', sep: str = ' '):
         """Create a from_hex operation.
 
         :param encoding: Encoding of the output string.
-        :param delimiter: String to use to split each byte representation.
+        :param sep: String to use to split each byte representation.
         """
-        super().__init__(encoding=encoding, delimiter=delimiter, base=16)
+        super().__init__(encoding=encoding, sep=sep, base=16)
 
 
 class FromOctalBytes(_FromBytes):
     """Convert a string interpreted as a list of octal bytes to a string with the given encoding."""
 
-    def __init__(self, encoding: str = 'utf8', delimiter: str = ' '):
+    def __init__(self, encoding: str = 'utf8', sep: str = ' '):
         """Create a from_octal operation.
 
         :param encoding: Encoding of the output string.
-        :param delimiter: String to use to split each byte representation.
+        :param sep: String to use to split each byte representation.
         """
-        super().__init__(encoding=encoding, delimiter=delimiter, base=8)
+        super().__init__(encoding=encoding, sep=sep, base=8)
 
 
 class FromBinaryBytes(_FromBytes):
     """Convert a string interpreted as a list of binary bytes to a string with the given encoding."""
 
-    def __init__(self, encoding: str = 'utf8', delimiter: str = ' '):
+    def __init__(self, encoding: str = 'utf8', sep: str = ' '):
         """Create a from_binary operation.
 
         :param encoding: Encoding of the output string.
-        :param delimiter: String to use to split each byte representation.
+        :param sep: String to use to split each byte representation.
         """
-        super().__init__(encoding=encoding, delimiter=delimiter, base=2)
+        super().__init__(encoding=encoding, sep=sep, base=2)

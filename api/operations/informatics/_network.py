@@ -41,31 +41,31 @@ fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]+| # fe80::7:8%eth0   fe80::7:8%1 (link
 class GroupIpAddresses(_core.Operation):
     """Group a list of IP addresses. Supports both IPv4 and IPv6."""
 
-    def __init__(self, subnet: int = 24, expand: bool = False, delimiter: str = '\n'):
+    def __init__(self, subnet: int = 24, expand: bool = False, sep: str = '\n'):
         """Create an IP address grouping operation.
 
         :param subnet: The subnet mask.
         :param expand: Whether to expand IP addresses.
-        :param delimiter: The string to use to split IP addresses.
+        :param sep: The string to use to split IP addresses.
         """
         if subnet < 0:
             raise ValueError(f'subnet mask must be > 0, got {subnet}')
         self._subnet = subnet
         self._expand = expand
-        self._delimiter = utils.unescape(delimiter)
+        self._sep = utils.unescape(sep)
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
         return {
             'subnet': self._subnet,
             'expand': self._expand,
-            'delimiter': self._delimiter,
+            'sep': self._sep,
         }
 
     def apply(self, s: str) -> str:
         ipv4_networks = {}
         ipv6_networks = {}
 
-        for line in s.split(self._delimiter):
+        for line in s.split(self._sep):
             try:
                 ip = ipaddress.ip_address(line)
                 mask = min(self._subnet, 128 if isinstance(ip, ipaddress.IPv6Address) else 32)

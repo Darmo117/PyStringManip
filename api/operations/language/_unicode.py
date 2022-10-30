@@ -12,8 +12,8 @@ from ... import utils
 class _CharCode(_core.Operation, abc.ABC):
     """Base class for charcode operations."""
 
-    def __init__(self, base: int = 16, delim: str = ' '):
-        self._delim = delim
+    def __init__(self, base: int = 16, sep: str = ' '):
+        self._sep = sep
         self._base = base
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
@@ -33,20 +33,20 @@ class ToCharcode(_CharCode):
         :param uppercase: Whether to put non-numeric digits in the resulting string to uppercase or not.
         :param pad: The number of 0s to pad codepoints with.
         """
-        super().__init__(base=base, delim=joiner)
+        super().__init__(base=base, sep=joiner)
         self._pad = pad
         self._uppercase = uppercase
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
         return {
             **super().get_params(),
-            'joiner': self._delim,
+            'joiner': self._sep,
             'uppercase': self._uppercase,
             'pad': self._pad,
         }
 
     def apply(self, s: str) -> str:
-        return self._delim.join(
+        return self._sep.join(
             utils.format_int(ord(c), self._base, uppercase=self._uppercase, pad=self._pad) for c in s)
 
 
@@ -59,16 +59,16 @@ class FromCharcode(_CharCode):
         :param base: The base codepoints are represented in.
         :param sep: The string to use to split codepoints.
         """
-        super().__init__(base=base, delim=sep)
+        super().__init__(base=base, sep=sep)
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
         return {
             **super().get_params(),
-            'sep': self._delim,
+            'sep': self._sep,
         }
 
     def apply(self, s: str) -> str:
-        return ''.join(chr(int(c, self._base)) for c in s.split(self._delim))
+        return ''.join(chr(int(c, self._base)) for c in s.split(self._sep))
 
 
 class UnicodeFormat(_core.Operation):
@@ -123,26 +123,26 @@ class _UnicodeChars(_core.Operation, abc.ABC):
 class EscapeUnicodeChars(_UnicodeChars):
     """Escape all or some Unicode characters."""
 
-    def __init__(self, mode: str = _UnicodeChars._UTF16BE, encode_all_chars: bool = False, uppercase_hex: bool = False):
+    def __init__(self, mode: str = _UnicodeChars._UTF16BE, encode_all: bool = False, uppercase: bool = False):
         """Create a Unicode escape operation.
 
         :param mode: The prefix to prepend to the codepoints.
-        :param encode_all_chars: Whether to escape all characters instead of only those with a codepoint > 127.
-        :param uppercase_hex: Whether to print hex codepoints as upper case.
+        :param encode_all: Whether to escape all characters instead of only those with a codepoint > 127.
+        :param uppercase: Whether to print hex codepoints as upper case.
         """
         super().__init__(mode)
         self._functions = {
             self._UTF16BE: self._escape_to_utf16be,
             self._PYTHON: self._escape_to_python,
         }
-        self._encode_all_chars = encode_all_chars
-        self._uppercase_hex = uppercase_hex
+        self._encode_all_chars = encode_all
+        self._uppercase_hex = uppercase
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
         return {
             **super().get_params(),
-            'encode_all_chars': self._encode_all_chars,
-            'uppercase_hex': self._uppercase_hex,
+            'encode_all': self._encode_all_chars,
+            'uppercase': self._uppercase_hex,
         }
 
     def apply(self, s: str) -> str:

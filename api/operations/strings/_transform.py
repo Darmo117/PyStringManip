@@ -62,7 +62,7 @@ class Reverse(_core.Operation):
 
 
 class Sort(_core.Operation):
-    """Sort entries after spliting text with the specified delimiter."""
+    """Sort entries after spliting text with the specified separator."""
 
     _ALPHA_CS = 'alpha'
     _ALPHA_CI = 'alpha_i'
@@ -70,10 +70,10 @@ class Sort(_core.Operation):
     _NUMERIC_HEX = 'numeric_hex'
     _IP_ADDRESS = 'ip_address'
 
-    def __init__(self, delimiter: str = '\n', mode: str = _ALPHA_CI, reverse: bool = False):
+    def __init__(self, sep: str = '\n', mode: str = _ALPHA_CI, reverse: bool = False):
         """Create a sort operation.
 
-        :param delimiter: The character to use to split the text.
+        :param sep: The string to use to split the text.
         :param mode: The sorting mode: 'alpha' for case-sensitive lexicographical order, 'alpha_i' for case-insensitive,
          'numeric' to sort base-10 numbers, 'numeric_hex' to sort base-16 numbers, 'ip_address' for IPv4 addresses.
         :param reverse: Whether to sort in reverse order.
@@ -87,66 +87,66 @@ class Sort(_core.Operation):
         }
         if mode not in self._sort_functions:
             raise ValueError(f'invalid sort mode: {mode}')
-        self._delimiter = utils.unescape(delimiter)
+        self._sep = utils.unescape(sep)
         self._mode = mode
         self._reverse = reverse
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
         return {
-            'delimiter': self._delimiter,
+            'sep': self._sep,
             'mode': self._mode,
             'reverse': self._reverse,
         }
 
     def apply(self, s: str) -> str:
-        return self._delimiter.join(
-            sorted(s.split(self._delimiter), key=self._sort_functions[self._mode], reverse=self._reverse))
+        return self._sep.join(
+            sorted(s.split(self._sep), key=self._sort_functions[self._mode], reverse=self._reverse))
 
 
 class Unique(_core.Operation):
-    """Remove duplicate entries after spliting text with the specified delimiter."""
+    """Remove duplicate entries after spliting text with the specified sep."""
 
-    def __init__(self, delimiter: str = '\n'):
+    def __init__(self, sep: str = '\n'):
         """Create a unique filter.
 
-        :param delimiter: The string to split the text with.
+        :param sep: The string to split the text with.
         """
-        self._delimiter = utils.unescape(delimiter)
+        self._sep = utils.unescape(sep)
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
         return {
-            'delimiter': self._delimiter,
+            'sep': self._sep,
         }
 
     def apply(self, s: str) -> str:
         res = []
-        for chunk in s.split(self._delimiter):
+        for chunk in s.split(self._sep):
             if chunk not in res:
                 res.append(chunk)
-        return self._delimiter.join(res)
+        return self._sep.join(res)
 
 
 class Filter(_core.Operation):
     """Split the text then filter out each substring that does not match the given regex."""
 
-    def __init__(self, delimiter: str = '\n', regex: str = '', flags: str = '', invert: bool = False):
+    def __init__(self, sep: str = '\n', regex: str = '', flags: str = '', invert: bool = False):
         """Create a filter.
 
-        :param delimiter: The string to split the text with.
+        :param sep: The string to split the text with.
         :param regex: The regex.
         :param flags: The list of regex flags: 's' to make the dot match new lines,
          'i' for case insensitiveness, 'm' to make '^' and '$' match the start and end of lines,
          'x' to ignore whitespace, 'a' to match only ASCII characters.
         :param invert: If true, filters out strings that do match the regex.
         """
-        self._delimiter = utils.unescape(delimiter)
+        self._sep = utils.unescape(sep)
         self._regex = re.compile(regex, flags=utils.regex_flags_to_int(flags))
         self._flags = flags
         self._invert = invert
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
         return {
-            'delimiter': self._delimiter,
+            'sep': self._sep,
             'regex': self._regex.pattern,
             'flags': self._flags,
             'invert': self._invert,
@@ -154,11 +154,11 @@ class Filter(_core.Operation):
 
     def apply(self, s: str) -> str:
         res = []
-        for chunk in s.split(self._delimiter):
+        for chunk in s.split(self._sep):
             # ^ <=> XOR
             if (self._regex.search(chunk) is not None) ^ self._invert:
                 res.append(chunk)
-        return self._delimiter.join(res)
+        return self._sep.join(res)
 
 
 class RemoveBom(_core.Operation):
@@ -174,12 +174,12 @@ class RemoveBom(_core.Operation):
 class _TakeChunk(_core.Operation, abc.ABC):
     """Base class for operations that take string slices."""
 
-    def __init__(self, delimiter: str):
-        self._delimiter = utils.unescape(delimiter)
+    def __init__(self, sep: str):
+        self._sep = utils.unescape(sep)
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
         return {
-            'delimiter': self._delimiter,
+            'sep': self._sep,
         }
 
     @abc.abstractmethod
@@ -187,19 +187,19 @@ class _TakeChunk(_core.Operation, abc.ABC):
         pass
 
     def apply(self, s: str) -> str:
-        return self._delimiter.join(self._take(s.split(self._delimiter)))
+        return self._sep.join(self._take(s.split(self._sep)))
 
 
 class Head(_TakeChunk):
     """Keep only the first n substrings."""
 
-    def __init__(self, delimiter: str = '\n', n: int = 10):
+    def __init__(self, sep: str = '\n', n: int = 10):
         """Create a head operation.
 
-        :param delimiter: The string to split the text with.
+        :param sep: The string to split the text with.
         :param n: The number of substrings to keep from the start.
         """
-        super().__init__(delimiter=delimiter)
+        super().__init__(sep=sep)
         self._n = n
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
@@ -215,13 +215,13 @@ class Head(_TakeChunk):
 class Tail(_TakeChunk):
     """Keep only the last n substrings."""
 
-    def __init__(self, delimiter: str = '\n', n: int = 10):
+    def __init__(self, sep: str = '\n', n: int = 10):
         """Create a tail operation.
 
-        :param delimiter: The string to split the text with.
+        :param sep: The string to split the text with.
         :param n: The number of substrings to keep from the end.
         """
-        super().__init__(delimiter=delimiter)
+        super().__init__(sep=sep)
         self._n = n
 
     def get_params(self) -> typ.Dict[str, typ.Any]:
@@ -237,15 +237,15 @@ class Tail(_TakeChunk):
 class Slice(_TakeChunk):
     """Keep only the substrings in the specified range."""
 
-    def __init__(self, delimiter: str = '\n', start: int = None, end: int = None, step: int = 1):
+    def __init__(self, sep: str = '\n', start: int = None, end: int = None, step: int = 1):
         """Create a slice operation.
 
-        :param delimiter: The string to split the text with.
+        :param sep: The string to split the text with.
         :param start: Slice’s first index.
         :param end: Slice’s last index (exclusive).
         :param step: Slice’s step.
         """
-        super().__init__(delimiter=delimiter)
+        super().__init__(sep=sep)
         self._start = start
         self._end = end
         self._step = step
@@ -396,7 +396,7 @@ class _PadLines(_core.Operation, abc.ABC):
         :param c: The character to pad with.
         """
         if len(c) != 1:
-            raise ValueError('fill string must be exactly one character long')
+            raise ValueError('pad string must be exactly one character long')
         self._c = c
 
     def get_params(self) -> typ.Dict[str, typ.Any]:

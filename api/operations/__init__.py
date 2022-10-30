@@ -1,6 +1,8 @@
 import dataclasses
 import inspect
 
+import typing_inspect
+
 from . import _docstring_parser as dsp
 from ._core import *
 from .data_formats import *
@@ -62,7 +64,8 @@ def _init():
     global _OPERATIONS, _OPS_METADATA
 
     for k, v in globals().items():
-        if isinstance(v, type) and issubclass(v, Operation) and not inspect.isabstract(v):
+        if (inspect.isclass(v) and not typing_inspect.is_generic_type(v)
+                and issubclass(v, Operation) and not inspect.isabstract(v)):
             # noinspection PyTypeChecker
             op_name = Operation.format_operation_name(k)
             _OPERATIONS[op_name] = v

@@ -17,7 +17,7 @@ class GetTime(_core.Operation):
     def __init__(self, unit: str = 's'):
         """Create an operation that returns the current time.
 
-        :param unit: The timestamp’s unit: 's' for seconds, 'ms' for milliseconds, 'us' for microseconds,
+        :param unit: The timestamp’s unit: 's' for seconds, 'ms' for milliseconds, 'µs' for microseconds,
          'ns' for nanoseconds.
         """
         if unit not in self._UNITS:

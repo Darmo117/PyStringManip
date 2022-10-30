@@ -16,7 +16,7 @@ class _CharCode(_core.Operation, abc.ABC):
         self._sep = sep
         self._base = base
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'base': self._base,
         }
@@ -37,7 +37,7 @@ class ToCharcode(_CharCode):
         self._pad = pad
         self._uppercase = uppercase
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             **super().get_params(),
             'joiner': self._sep,
@@ -61,7 +61,7 @@ class FromCharcode(_CharCode):
         """
         super().__init__(base=base, sep=sep)
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             **super().get_params(),
             'sep': self._sep,
@@ -83,7 +83,7 @@ class UnicodeFormat(_core.Operation):
         self._under = u
         self._strike = s
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'u': self._under,
             's': self._strike,
@@ -114,7 +114,7 @@ class _UnicodeChars(_core.Operation, abc.ABC):
             raise ValueError(f'invalid mode: {mode}')
         self._mode = mode
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'mode': self._mode,
         }
@@ -138,7 +138,7 @@ class EscapeUnicodeChars(_UnicodeChars):
         self._encode_all_chars = encode_all
         self._uppercase_hex = uppercase
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             **super().get_params(),
             'encode_all': self._encode_all_chars,
@@ -180,7 +180,7 @@ class UnescapeUnicodeChars(_UnicodeChars):
                 return self._unescape_from_utf16be(s)
 
     def _unescape_as_python(self, s: str) -> str:
-        def aux(m: typ.Match[str]) -> str:
+        def aux(m: re.Match[str]) -> str:
             match = m.group(1) or m.group(2)
             c = chr(int(match, 16))
             try:
@@ -195,7 +195,7 @@ class UnescapeUnicodeChars(_UnicodeChars):
         return self._PYTHON_REGEX.sub(aux, s)
 
     def _unescape_from_utf16be(self, s: str) -> str:
-        def aux(m: typ.Match[str]) -> str:
+        def aux(m: re.Match[str]) -> str:
             bytes_ = b''
             for code in m.group(1).split(r'\u')[1:]:
                 bytes_ += int(code, 16).to_bytes(2, 'big')
@@ -219,7 +219,7 @@ class NormalizeUnicode(_core.Operation):
             raise ValueError(f'invalid Unicode norm: {norm}')
         self._norm = norm
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'norm': self._norm,
         }

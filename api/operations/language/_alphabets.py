@@ -176,7 +176,7 @@ class _MorseCode(_core.Operation, abc.ABC):
         self._word_sep = utils.unescape(word_sep)
         self._extended = extended
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'dot': self._dot,
             'dash': self._dash,

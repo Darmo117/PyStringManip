@@ -6,7 +6,6 @@ Adapted from https://github.com/openstack/rally/blob/master/rally/common/plugin/
 import dataclasses
 import math
 import re
-import typing as typ
 
 _PARAM_OR_RETURNS_REGEX = re.compile(':(?:param|returns)')
 _RETURNS_REGEX = re.compile(':returns: (?P<doc>.*)', re.S)
@@ -48,7 +47,7 @@ def _reindent(string: str) -> str:
 class DocString:
     short_description: str = None
     long_description: str = None
-    params: typ.Dict[str, str] = None
+    params: dict[str, str] = None
     returns: str = None
 
 

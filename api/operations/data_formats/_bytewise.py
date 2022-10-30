@@ -17,7 +17,7 @@ class _BytewiseOperation(_core.Operation, abc.ABC):
         self._encoding = encoding
         self._sep = utils.unescape(sep)
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'encoding': self._encoding,
             'sep': self._sep,
@@ -49,7 +49,7 @@ class _BytesToBase(_BytewiseOperation):
         self._base = base
         self._expose_base = expose_base
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         params = {
             **super().get_params(),
             'pad': self._pad,
@@ -155,7 +155,7 @@ class _FromBytes(_BytewiseOperation):
         self._base = base
         self._expose_base = expose_base
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         params = super().get_params()
         if self._expose_base:
             params['base'] = self._base

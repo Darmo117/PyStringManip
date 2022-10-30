@@ -16,11 +16,11 @@ class Rng(_core.Operation):
 
         :param bytes: The number of bytes.
         """
-        if not (1 <= bytes <= 100_000):
+        if not (1 <= bytes <= 1e5):
             raise ValueError('number of bytes must be in [1, 1e5]')
         self._bytes = bytes
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'bytes': self._bytes,
         }
@@ -62,7 +62,7 @@ class Lipsum(_core.Operation):
             raise ValueError(f'invalid unit: {unit}')
         self._unit = unit
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'size': self._size,
             'unit': self._unit,

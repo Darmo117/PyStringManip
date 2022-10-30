@@ -45,7 +45,7 @@ class Pipeline:
         """
         self._name = name
         self._verbosity = verbosity
-        self._operations: typ.List[ops.Operation | Pipeline] = []
+        self._operations: list[ops.Operation | Pipeline] = []
         self._logger = Logger(name, verbosity)
 
     @property

@@ -74,7 +74,7 @@ class DefangUrls(_core.Operation):
         """
         self._escape_sep = escape_sep
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'escape_sep': self._escape_sep,
         }
@@ -109,7 +109,7 @@ class _QueryPath(_core.Operation, abc.ABC):
         self._query = query
         self._joiner = utils.unescape(joiner)
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'query': self._query,
             'joiner': self._joiner,

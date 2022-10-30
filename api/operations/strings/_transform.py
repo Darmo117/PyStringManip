@@ -50,7 +50,7 @@ class Reverse(_core.Operation):
         """
         self._by_line = by_line
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'by_line': self._by_line,
         }
@@ -91,7 +91,7 @@ class Sort(_core.Operation):
         self._mode = mode
         self._reverse = reverse
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'sep': self._sep,
             'mode': self._mode,
@@ -113,7 +113,7 @@ class Unique(_core.Operation):
         """
         self._sep = utils.unescape(sep)
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'sep': self._sep,
         }
@@ -144,7 +144,7 @@ class Filter(_core.Operation):
         self._flags = flags
         self._invert = invert
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'sep': self._sep,
             'regex': self._regex.pattern,
@@ -177,13 +177,13 @@ class _TakeChunk(_core.Operation, abc.ABC):
     def __init__(self, sep: str):
         self._sep = utils.unescape(sep)
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'sep': self._sep,
         }
 
     @abc.abstractmethod
-    def _take(self, s: typ.List[str]) -> typ.List[str]:
+    def _take(self, s: list[str]) -> list[str]:
         pass
 
     def apply(self, s: str) -> str:
@@ -202,13 +202,13 @@ class Head(_TakeChunk):
         super().__init__(sep=sep)
         self._n = n
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             **super().get_params(),
             'n': self._n,
         }
 
-    def _take(self, s: typ.List[str]) -> typ.List[str]:
+    def _take(self, s: list[str]) -> list[str]:
         return s[:self._n]
 
 
@@ -224,13 +224,13 @@ class Tail(_TakeChunk):
         super().__init__(sep=sep)
         self._n = n
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             **super().get_params(),
             'n': self._n,
         }
 
-    def _take(self, s: typ.List[str]) -> typ.List[str]:
+    def _take(self, s: list[str]) -> list[str]:
         return s[-self._n:]
 
 
@@ -250,7 +250,7 @@ class Slice(_TakeChunk):
         self._end = end
         self._step = step
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             **super().get_params(),
             'start': self._start,
@@ -258,7 +258,7 @@ class Slice(_TakeChunk):
             'step': self._step,
         }
 
-    def _take(self, s: typ.List[str]) -> typ.List[str]:
+    def _take(self, s: list[str]) -> list[str]:
         return s[self._start:self._end:self._step]
 
 
@@ -276,7 +276,7 @@ class _TakeBytes(_core.Operation, abc.ABC):
         self._start = start
         self._n = n
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'encoding': self._encoding,
             'start': self._start,
@@ -323,7 +323,7 @@ class Escape(_core.Operation):
         """
         self._escape_quote = escape_quote
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'escape_quote': self._escape_quote,
         }
@@ -374,7 +374,7 @@ class ExpandCharsRange(_core.Operation):
         """
         self._joiner = joiner
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'joiner': self._joiner,
         }
@@ -382,7 +382,7 @@ class ExpandCharsRange(_core.Operation):
     def apply(self, s: str) -> str:
         return self._RANGE_REGEX.sub(self._repl, s)
 
-    def _repl(self, match: typ.Match[str]) -> str:
+    def _repl(self, match: re.Match[str]) -> str:
         start, end = match.groups()
         return self._joiner.join(map(chr, range(ord(start), ord(end) + 1)))
 
@@ -399,7 +399,7 @@ class _PadLines(_core.Operation, abc.ABC):
             raise ValueError('pad string must be exactly one character long')
         self._c = c
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'c': self._c,
         }

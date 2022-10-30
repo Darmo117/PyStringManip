@@ -17,7 +17,7 @@ class _SetOperation(_core.Operation, abc.ABC):
         self._sets_sep = sets_sep
         self._values_sep = values_sep
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'sets_sep': self._sets_sep,
             'values_sep': self._values_sep,

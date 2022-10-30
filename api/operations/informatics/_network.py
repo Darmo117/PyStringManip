@@ -54,7 +54,7 @@ class GroupIpAddresses(_core.Operation):
         self._expand = expand
         self._sep = utils.unescape(sep)
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'subnet': self._subnet,
             'expand': self._expand,
@@ -84,8 +84,8 @@ class GroupIpAddresses(_core.Operation):
         return f'{self._format(ipv4_networks)}{self._format(ipv6_networks)}'.strip()
 
     @staticmethod
-    def _format(networks: typ.Dict[ipaddress.IPv4Network | ipaddress.IPv6Network,
-                                   typ.List[ipaddress.IPv4Address | ipaddress.IPv6Address]]) -> str:
+    def _format(networks: dict[ipaddress.IPv4Network | ipaddress.IPv6Network,
+                               list[ipaddress.IPv4Address | ipaddress.IPv6Address]]) -> str:
         res = ''
         for network in sorted(networks.keys()):
             ips = networks[network]

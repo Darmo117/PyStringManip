@@ -60,7 +60,7 @@ class ToHexDump(_core.Operation):
         self._uppercase = uppercase
         self._unix = unix
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'encoding': self._encoding,
             'bpl': self._bpl,
@@ -107,7 +107,7 @@ class FromHexDump(_core.Operation):
         """
         self._encoding = encoding
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'encoding': self._encoding,
         }

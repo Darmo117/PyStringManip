@@ -19,7 +19,7 @@ class Vigenere(_core.Operation):
         self._key = key
         self._mode = mode
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'key': self._key,
             'mode': self._mode,

@@ -16,7 +16,7 @@ class ToBase(_core.Operation):
         self._base = base
         self._uppercase = uppercase
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'base': self._base,
             'uppercase': self._uppercase,
@@ -36,7 +36,7 @@ class FromBase(_core.Operation):
         """
         self._base = base
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'base': self._base,
         }

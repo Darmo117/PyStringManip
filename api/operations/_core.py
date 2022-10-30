@@ -15,7 +15,7 @@ class Operation(abc.ABC):
         """
         pass
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         """Returns the configuration of this operation as a dict object.
 
         :return: The configuration dict.

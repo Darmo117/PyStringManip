@@ -13,14 +13,14 @@ _OPERATION_CFG_REGEX = re.compile(r'(?P<name>\w+)(?:\[(?P<params>(?:\w+=.*?)+(?:
 @dataclasses.dataclass(frozen=True)
 class OperationConfig:
     name: str
-    args: typ.Dict[str, typ.Any] = None
+    args: dict[str, typ.Any] = None
 
 
 @dataclasses.dataclass(frozen=True)
 class Config:
     verbosity: int
     fail_if_empty: bool
-    operations: typ.List[OperationConfig]
+    operations: list[OperationConfig]
 
 
 def _parse_cli_operation(raw: str, ops_metadata: ops.OperationsMetadada, index: int) -> OperationConfig:
@@ -40,7 +40,7 @@ def _parse_cli_operation(raw: str, ops_metadata: ops.OperationsMetadada, index: 
                 raise ValueError(
                     f'invalid value {param_value!r} for parameter {param_name!r} on operation {op_name!r} (#{index})')
 
-        def split_param(raw_param: str) -> typ.List[str]:
+        def split_param(raw_param: str) -> list[str]:
             raw_param = raw_param.replace(r'\,', ',')
             if '=' not in raw_param:
                 raise ValueError(f'malformed parameter {raw_param!r} for operation {op_name!r} (#{index})')
@@ -55,7 +55,7 @@ def _parse_cli_operation(raw: str, ops_metadata: ops.OperationsMetadada, index: 
         raise ValueError(f'invalid operation definition: {raw!r} (#{index})')
 
 
-def _load_config(config_path: pathlib.Path, ops_metadata: ops.OperationsMetadada) -> typ.List[OperationConfig]:
+def _load_config(config_path: pathlib.Path, ops_metadata: ops.OperationsMetadada) -> list[OperationConfig]:
     operations = []
 
     def cast_value(op_name: str, op_index: int, param_name: str, param_value: str) -> typ.Any:
@@ -86,7 +86,7 @@ def _load_config(config_path: pathlib.Path, ops_metadata: ops.OperationsMetadada
         return operations
 
 
-def parse_args(args: typ.List[str]) -> Config:
+def parse_args(args: list[str]) -> Config:
     """Parses the given CLI arguments.
 
     :param args: The CLI arguments.

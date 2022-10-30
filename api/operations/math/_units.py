@@ -7,7 +7,7 @@ from .. import _core
 class _ConvertUnits(_core.Operation, abc.ABC):
     """Base class for unit convertion operations."""
 
-    def __init__(self, source: str, target: str, unit_coefs: typ.Dict[str, float]):
+    def __init__(self, source: str, target: str, unit_coefs: dict[str, float]):
         """Create a unit converter.
 
         :param source: Source unit.
@@ -18,7 +18,7 @@ class _ConvertUnits(_core.Operation, abc.ABC):
         self._target_unit = target
         self._unit_coefs = unit_coefs
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'source': self._source_unit,
             'target': self._target_unit,

@@ -24,7 +24,7 @@ class GetTime(_core.Operation):
             raise ValueError(f'invalid granularity: {unit}')
         self._unit = unit
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'unit': self._unit,
         }

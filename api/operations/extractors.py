@@ -26,7 +26,7 @@ class _Extractor(_core.Operation, abc.ABC):
         self._unique = unique
         self._joiner = utils.unescape(joiner)
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'display_total': self._display_total,
             'sort': self._sort,
@@ -46,7 +46,7 @@ class _Extractor(_core.Operation, abc.ABC):
         return res
 
     @abc.abstractmethod
-    def _extract(self, s: str) -> typ.List[str]:
+    def _extract(self, s: str) -> list[str]:
         pass
 
 
@@ -70,15 +70,15 @@ class ExtractIps(_Extractor):
         self._ipv6 = ipv6
         self._hide_private = hide_private
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             **super().get_params(),
             'hide_private': self._hide_private,
         }
 
-    def _extract(self, s: str) -> typ.List[str]:
+    def _extract(self, s: str) -> list[str]:
         def _map(it: typ.Iterator[re.Match[str]], cast: typ.Type[ipaddress.IPv4Address | ipaddress.IPv6Address]) \
-                -> typ.List[str]:
+                -> list[str]:
             return [m.group() for m in it if not self._hide_private or not cast(m.group()).is_private]
 
         ips = []
@@ -94,7 +94,7 @@ class ExtractMacAddresses(_Extractor):
 
     _MAC_ADDRESS_REGEX = re.compile(r'(?:[a-fA-F\d]{1,2}:){5}[a-fA-F\d]{1,2}')
 
-    def _extract(self, s: str) -> typ.List[str]:
+    def _extract(self, s: str) -> list[str]:
         return self._MAC_ADDRESS_REGEX.findall(s)
 
 
@@ -103,14 +103,14 @@ class ExtractUrls(_Extractor):
 
     _URL_REGEX = re.compile(r"""\w*://[\w.-]+(?:\.[\w.-]+)+[-\w._~:/?#\[\]@!$&'()*+,;=]+""")
 
-    def _extract(self, s: str) -> typ.List[str]:
+    def _extract(self, s: str) -> list[str]:
         return self._URL_REGEX.findall(s)
 
 
 class ExtractDomains(ExtractUrls):
     """Extract all URL domains."""
 
-    def _extract(self, s: str) -> typ.List[str]:
+    def _extract(self, s: str) -> list[str]:
         return [urllib.parse.urlparse(url).netloc for url in self._URL_REGEX.findall(s)]
 
 
@@ -136,7 +136,7 @@ class ExtractEmails(_Extractor):
 )
 """, re.VERBOSE)
 
-    def _extract(self, s: str) -> typ.List[str]:
+    def _extract(self, s: str) -> list[str]:
         return self._EMAIL_REGEX.findall(s)
 
 
@@ -167,7 +167,7 @@ class ExtractFilePaths(_Extractor):
         self._windows = windows
         self._exclude_ws = exclude_ws
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             **super().get_params(),
             'unix': self._unix,
@@ -175,7 +175,7 @@ class ExtractFilePaths(_Extractor):
             'exclude_ws': self._exclude_ws,
         }
 
-    def _extract(self, s: str) -> typ.List[str]:
+    def _extract(self, s: str) -> list[str]:
         paths = []
         if self._unix:
             paths.extend((self._UNIX_FP_REGEX_NO_WS if self._exclude_ws else self._UNIX_FP_REGEX).findall(s))
@@ -197,7 +197,7 @@ class ExtractDates(_Extractor):
     _DATE_REGEX = re.compile(r'\d{4}(?:[-/. ]\d{2}){2}|(?:\d{2}[-/. ]){2}\d{4}')
     _FORMATS = (*__generate('%Y§%m§%d'), *__generate('%d§%m§%Y'), *__generate('%m§%d§%Y'))
 
-    def _extract(self, s: str) -> typ.List[str]:
+    def _extract(self, s: str) -> list[str]:
         def f(m: str) -> bool:
             for df in self._FORMATS:
                 try:
@@ -241,7 +241,7 @@ class Regex(_core.Operation):
         self._match_groups_joiner = utils.unescape(match_groups_joiner)
         self._groups_joiner = utils.unescape(groups_joiner)
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'regex': self._regex.pattern,
             'flags': self._flags,

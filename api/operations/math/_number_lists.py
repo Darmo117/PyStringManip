@@ -20,7 +20,7 @@ class _Base(_core.Operation, abc.ABC):
         """
         self._sep = sep
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'sep': self._sep,
         }

@@ -30,7 +30,7 @@ class FrequencyDist(_core.Operation):
         self._show_ascii = show_ascii
         self._show_zeros = show_zeros
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'encoding': self._encoding,
             'show_ascii': self._show_ascii,
@@ -75,7 +75,7 @@ class HammingDistance(_core.Operation):
         """
         self._sep = utils.unescape(sep)
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'sep': self._sep,
         }

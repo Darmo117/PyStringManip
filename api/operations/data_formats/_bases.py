@@ -15,7 +15,7 @@ class _BaseOperation(_core.Operation, abc.ABC):
         """
         self._encoding = encoding
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'encoding': self._encoding,
         }
@@ -63,7 +63,7 @@ class _Base64Operation(_BaseOperation, abc.ABC):
             raise ValueError(f'altchars must be of length 2, got {size}')
         self._altchars = bytes(altchars, 'utf8')
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'encoding': self._encoding,
             'altchars': self._altchars.decode('utf8'),
@@ -109,7 +109,7 @@ class FromBase64(_Base64Operation):
         super().__init__(encoding=encoding, altchars=altchars)
         self._add_pad = add_pad
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             **super().get_params(),
             'add_pad': self._add_pad,
@@ -133,7 +133,7 @@ class ToBase85(_BaseOperation):
         super().__init__(encoding=encoding)
         self._pad = pad
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             **super().get_params(),
             'pad': self._pad,

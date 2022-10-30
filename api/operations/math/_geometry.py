@@ -16,7 +16,7 @@ class HaversineDist(_core.Operation):
         self._coords_sep = coords_sep
         self._latlon_sep = latlon_sep
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'coords_sep': self._coords_sep,
             'latlon_sep': self._latlon_sep,
@@ -32,7 +32,7 @@ class HaversineDist(_core.Operation):
         dist = earth_diameter * math.asin(math.sqrt(lats + math.cos(lat1) * math.cos(lat2) * lons))
         return str(dist)
 
-    def _latlon(self, coord: str) -> typ.Tuple[float, float]:
+    def _latlon(self, coord: str) -> tuple[float, float]:
         # noinspection PyTypeChecker
         return tuple(math.radians(float(s)) for s in coord.split(self._latlon_sep, maxsplit=1))
 

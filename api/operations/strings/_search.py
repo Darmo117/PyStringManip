@@ -18,7 +18,7 @@ class RemoveWhitespace(_core.Operation):
                 f'found non-whitespace character in exclusion list at index {match.start(1) + 1}: {match.group(1)!r}')
         self._exclude = exclude
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'exclude': self._exclude,
         }
@@ -50,7 +50,7 @@ class Replace(_core.Operation):
         self._repl = utils.unescape(repl)
         self._flags = flags
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'regex': self._regex.pattern,
             'repl': self._repl,
@@ -77,7 +77,7 @@ class Occurrences(_core.Operation):
         self._flags = flags
         self._invert = invert
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'regex': self._regex.pattern,
             'flags': self._flags,
@@ -98,7 +98,7 @@ class CheckSimilarities(_core.Operation):
         """
         self._sep = utils.unescape(sep)
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'sep': self._sep,
         }

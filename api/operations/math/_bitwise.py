@@ -14,7 +14,7 @@ class _BitwiseOperation(_core.Operation):
         """
         self._n = n
 
-    def get_params(self) -> typ.Dict[str, typ.Any]:
+    def get_params(self) -> dict[str, typ.Any]:
         return {
             'n': self._n,
         }

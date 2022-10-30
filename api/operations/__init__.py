@@ -17,7 +17,7 @@ from .strings import *
 
 @dataclasses.dataclass(frozen=True)
 class ArgMetadata:
-    type: typ.Type
+    type: type
     default_value: typ.Any
     doc: str = None
 
@@ -25,12 +25,12 @@ class ArgMetadata:
 @dataclasses.dataclass(frozen=True)
 class OperationMetadata:
     name: str
-    args: typ.Dict[str, ArgMetadata]
+    args: dict[str, ArgMetadata]
     doc: str = None
     special: bool = False
 
 
-OperationsMetadada = typ.Dict[str, OperationMetadata]
+OperationsMetadada = dict[str, OperationMetadata]
 
 _OPERATIONS = {}
 _OPS_METADATA = {

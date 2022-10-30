@@ -20,7 +20,7 @@ class CsvToJson(_core.Operation):
         :param value_sep: String to use to split values in a row.
         :param mode: Either 'arrays', 'dicts' or 'dict_of_arrays'.
         :param parse_values: Whether to try to parse values, i.e. numbers and empty values.
-        :param strict: Whether to allow lines with varying numbers of values.
+        :param strict: Whether to allow lines to have more values than the header.
         """
         if mode not in (self._ARRAYS, self._DICTS, self._DICT_OF_ARRAYS):
             raise ValueError(f'invalid mode: {mode!r}')
@@ -33,6 +33,8 @@ class CsvToJson(_core.Operation):
         return {
             'value_sep': self._value_sep,
             'mode': self._mode,
+            'parse_values': self._parse_values,
+            'strict': self._strict,
         }
 
     def apply(self, s: str) -> str:

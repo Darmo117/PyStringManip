@@ -1,5 +1,4 @@
 import abc
-import math
 import typing as typ
 
 from .. import _core
@@ -28,13 +27,12 @@ class _BytewiseOperation(_core.Operation, abc.ABC):
 class _BytesToBase(_BytewiseOperation):
     """Base class for all operations that convert a string’s bytes to a list of base-n numbers."""
 
-    _DIGITS = '0123456789abcdefghijklmnopqrstuvwxyz'
-
     def __init__(self, encoding: str = 'utf8', uppercase: bool = False, joiner: str = ' ', bpl: int = 0,
                  pad: bool = False, base: int = 10, expose_base: bool = False):
         """Create a to_base operation.
 
         :param encoding: Encoding of the input string.
+        :param uppercase: Whether to put non-numeric digits in the resulting string to uppercase or not.
         :param joiner: String to use to join each byte representation.
         :param bpl: Number of bytes to display per line.
          A value of 0 or less means that all bytes will be on the same line.
@@ -68,21 +66,8 @@ class _BytesToBase(_BytewiseOperation):
             # noinspection PyChainedComparisons
             if self._bytes_per_line > 0 and len(buffer[-1]) == self._bytes_per_line:
                 buffer.append([])
-            buffer[-1].append(self._format(b))
+            buffer[-1].append(utils.format_int(b, self._base, uppercase=self._uppercase, pad=-self._pad))
         return '\n'.join(self._delimiter.join(line) for line in buffer)
-
-    def _format(self, n: int) -> str:
-        flag = {2: 'bb', 8: 'oo', 16: 'xX'}.get(self._base)
-        padding_length = math.ceil(math.log(256) / math.log(self._base)) if self._pad else 0
-        if flag:
-            return format(n, f'0{padding_length}{flag[self._uppercase]}')
-        else:
-            res = ''
-            while n >= self._base:
-                res = self._DIGITS[n % self._base] + res
-                n //= self._base
-            res = (self._DIGITS[n % self._base] + res).rjust(padding_length, '0')
-            return res.upper() if self._base > 10 and self._uppercase else res
 
 
 class BytesToBaseN(_BytesToBase):

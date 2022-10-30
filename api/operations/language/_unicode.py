@@ -6,6 +6,69 @@ import unicodedata
 import unidecode
 
 from .. import _core
+from ... import utils
+
+
+class _CharCode(_core.Operation, abc.ABC):
+    """Base class for charcode operations."""
+
+    def __init__(self, base: int = 16, delim: str = ' '):
+        self._delim = delim
+        self._base = base
+
+    def get_params(self) -> typ.Dict[str, typ.Any]:
+        return {
+            'base': self._base,
+        }
+
+
+class ToCharcode(_CharCode):
+    """Convert each character to their Unicode codepoint."""
+
+    def __init__(self, base: int = 16, joiner: str = ' ', uppercase: bool = False, pad: int = 4):
+        """Create a to_charcode operation.
+
+        :param base: The base to represent codepoints in.
+        :param joiner: The string to use to join codepoints with.
+        :param uppercase: Whether to put non-numeric digits in the resulting string to uppercase or not.
+        :param pad: The number of 0s to pad codepoints with.
+        """
+        super().__init__(base=base, delim=joiner)
+        self._pad = pad
+        self._uppercase = uppercase
+
+    def get_params(self) -> typ.Dict[str, typ.Any]:
+        return {
+            **super().get_params(),
+            'joiner': self._delim,
+            'uppercase': self._uppercase,
+            'pad': self._pad,
+        }
+
+    def apply(self, s: str) -> str:
+        return self._delim.join(
+            utils.format_int(ord(c), self._base, uppercase=self._uppercase, pad=self._pad) for c in s)
+
+
+class FromCharcode(_CharCode):
+    """Convert a list of Unicode codepoints into a text."""
+
+    def __init__(self, base: int = 16, sep: str = ' '):
+        """Create a from_charcode operation.
+
+        :param base: The base codepoints are represented in.
+        :param sep: The string to use to split codepoints.
+        """
+        super().__init__(base=base, delim=sep)
+
+    def get_params(self) -> typ.Dict[str, typ.Any]:
+        return {
+            **super().get_params(),
+            'sep': self._delim,
+        }
+
+    def apply(self, s: str) -> str:
+        return ''.join(chr(int(c, self._base)) for c in s.split(self._delim))
 
 
 class UnicodeFormat(_core.Operation):

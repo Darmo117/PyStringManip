@@ -5,6 +5,9 @@ import json
 import re
 import typing as typ
 
+import avro.datafile as avro_df
+import avro.io as avro_io
+
 from .. import _core
 
 
@@ -220,3 +223,15 @@ class JsonToCsv(_CsvJson):
                     data.append({})
                 data[i][k] = self._bool_to_str(v)
         return header, data
+
+
+class AvroToJson(_core.Operation):
+    """Convert Avro encoded data into JSON."""
+
+    def apply(self, s: str) -> str:
+        data = []
+        with io.BytesIO(s.encode('latin1')) as f:  # latin1 to keep all bytes unchanged
+            reader = avro_df.DataFileReader(f, avro_io.DatumReader())
+            for e in reader:
+                data.append(json.dumps(e))
+        return '\n'.join(data)

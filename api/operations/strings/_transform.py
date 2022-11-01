@@ -428,3 +428,46 @@ class PadRight(_PadLines):
 
     def _pad(self, line: str, n: int) -> str:
         return line.ljust(n, self._c)
+
+
+class Insert(_core.Operation):
+    """Insert text at the given position."""
+
+    def __init__(self, i: int = 0, s: str = ''):
+        """Create an insertion operation.
+
+        :param i: Index at which to insert the string.
+        :param s: The string to insert. Accepts escape codes.
+        """
+        self._i = i
+        self._s = utils.unescape(s)
+
+    def get_params(self) -> dict[str, typ.Any]:
+        return {
+            'i': self._i,
+            's': self._s,
+        }
+
+    def apply(self, s: str) -> str:
+        if not self._s:
+            return s
+        return s[:self._i] + self._s + s[self._i:]
+
+
+class Append(_core.Operation):
+    """Append text."""
+
+    def __init__(self, s: str = ''):
+        """Create an 'append' operation.
+
+        :param s: The string to append. Accepts escape codes.
+        """
+        self._s = utils.unescape(s)
+
+    def get_params(self) -> dict[str, typ.Any]:
+        return {
+            's': self._s,
+        }
+
+    def apply(self, s: str) -> str:
+        return s + self._s

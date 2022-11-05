@@ -1,3 +1,5 @@
+import csv
+import io
 import re
 import typing as typ
 import unicodedata
@@ -119,3 +121,82 @@ class FromHexDump(_core.Operation):
             if raw_bytes is not None:
                 data += bytes(int(b, 16) for b in filter(None, raw_bytes.group(1).split(' ')))
         return data.decode(self._encoding)
+
+
+class ToTable(_core.Operation):
+    """Convert CSV data into a table."""
+
+    def __init__(self, sep: str = ',', quote: str = '"', has_header: bool = False, as_html: bool = False):
+        """Create a to_table operation.
+
+        :param sep: CSV value separator.
+        :param quote: CSV quoting character.
+        :param has_header: Whether to consider the first row as the table’s header.
+        :param as_html: True to convert data into a HTML table, False to convert it into an ASCII table.
+        """
+        self._value_sep = sep
+        self._quote = quote
+        self._has_header = has_header
+        self._as_html = as_html
+
+    def get_params(self) -> dict[str, typ.Any]:
+        return {
+            'value_sep': self._value_sep,
+            'quote': self._quote,
+            'has_header': self._has_header,
+            'as_html': self._as_html,
+        }
+
+    def apply(self, s: str) -> str:
+        with io.StringIO(s) as f:
+            csv_data = csv.DictReader(f, delimiter=self._value_sep, quotechar=self._quote)
+            lines = [csv_data.fieldnames, *map(self._parse_line, csv_data)]
+        if self._as_html:
+            return self._html(lines)
+        return self._ascii(lines)
+
+    @staticmethod
+    def _parse_line(line_dict: dict[str, str | list[str | None] | None]) -> list[str]:
+        def parse(line: str | typ.Iterable[str | None] | None) -> list[str]:
+            values = []
+            for v in line:
+                match v:
+                    case None:
+                        values.append('')
+                    case [*l]:  # csv.DictReader puts additional column values into a list
+                        values.extend(parse(l))
+                    case v:
+                        values.append(v)
+            return values
+
+        return parse(line_dict.values())
+
+    def _html(self, lines: list[list[str]]) -> str:
+        res = '<table>\n<tbody>\n'
+        for i, line in enumerate(lines):
+            cell_type = 'th' if self._has_header and i == 0 else 'td'
+            res += '<tr>\n' + ''.join(f'  <{cell_type}>{v}</{cell_type}>\n' for v in line) + '</tr>\n'
+        return res + '</tbody>\n</table>'
+
+    def _ascii(self, lines: list[list[str]]) -> str:
+        column_widths = []
+        # Compute width of each column
+        for line in lines:
+            for i, v in enumerate(line):
+                if i == len(column_widths):
+                    column_widths.append(0)
+                if (cell_length := len(v)) > column_widths[i]:
+                    column_widths[i] = cell_length
+
+        row_sep = '+' + '+'.join('-' * (2 + w) for w in column_widths) + '+\n'
+        res = row_sep
+        for i, line in enumerate(lines):
+            table_line = '|'
+            for j, w in enumerate(column_widths):
+                v = line[j] if j < len(line) else ''
+                v += ' ' * (w - len(v))
+                table_line += f' {v} |'
+            res += table_line + '\n'
+            if self._has_header and i == 0 or i == len(lines) - 1:
+                res += row_sep
+        return res[:-1]  # Remove trailing \n

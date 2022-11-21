@@ -34,6 +34,8 @@ class ConvertDistance(_ConvertUnits):
 
     _COEFS = {
         # SI
+        'qm': 1e-30,
+        'rm': 1e-27,
         'ym': 1e-24,
         'zm': 1e-21,
         'am': 1e-18,
@@ -55,6 +57,8 @@ class ConvertDistance(_ConvertUnits):
         'Em': 1e18,
         'Zm': 1e21,
         'Ym': 1e24,
+        'Rm': 1e27,
+        'Qm': 1e30,
         # Imperial
         'th': 2.54e-5,  # 1/1000 in
         'in': 2.54e-2,
@@ -91,6 +95,8 @@ class ConvertArea(_ConvertUnits):
 
     _COEFS = {
         # SI
+        'qm²': 1e-60,
+        'rm²': 1e-54,
         'ym²': 1e-48,
         'zm²': 1e-42,
         'am²': 1e-36,
@@ -112,6 +118,8 @@ class ConvertArea(_ConvertUnits):
         'Em²': 1e36,
         'Zm²': 1e42,
         'Ym²': 1e48,
+        'Rm²': 1e54,
+        'Qm²': 1e60,
         # ares
         'ca': 1,
         'da': 10,
@@ -126,6 +134,8 @@ class ConvertArea(_ConvertUnits):
         'ro': 1012,
         'ac': 4046.856_422_4,
         # Physics
+        'qb': 1e-58,
+        'rb': 1e-55,
         'yb': 1e-52,
         'zb': 1e-49,
         'ab': 1e-46,
@@ -154,6 +164,8 @@ class ConvertMass(_ConvertUnits):
 
     _COEFS = {
         # SI
+        'qg': 1e-30,
+        'rg': 1e-27,
         'yg': 1e-24,
         'zg': 1e-21,
         'ag': 1e-18,
@@ -175,6 +187,8 @@ class ConvertMass(_ConvertUnits):
         'Eg': 1e18,
         'Zg': 1e21,
         'Yg': 1e24,
+        'Rg': 1e27,
+        'Qg': 1e30,
         # Usual
         'q': 1e2,  # Quintal
         't': 1e3,  # Tonne
@@ -247,7 +261,7 @@ class ConvertDataUnit(_ConvertUnits):
         'b': 1,
         'B': 8,
         # Binary bits
-        'kib': 2 ** 10,
+        'Kib': 2 ** 10,
         'Mib': 2 ** 20,
         'Gib': 2 ** 30,
         'Tib': 2 ** 40,
@@ -267,7 +281,7 @@ class ConvertDataUnit(_ConvertUnits):
         'Zb': 1e21,
         'Yb': 1e24,
         # Binary bytes
-        'kiB': 2 ** 13,
+        'KiB': 2 ** 13,
         'MiB': 2 ** 23,
         'GiB': 2 ** 33,
         'TiB': 2 ** 43,
